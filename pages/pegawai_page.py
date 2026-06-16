@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QPushButton, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QMessageBox, QDialog, QCheckBox)
+                               QHeaderView, QMessageBox, QDialog, QCheckBox,
+                               QLineEdit, QComboBox)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-import database
+import database.database as database
 from dialogs.pegawai_dialog import PegawaiDialog
 
 JABATAN_COLORS = {
@@ -22,6 +23,7 @@ class PegawaiPage(QWidget):
     def __init__(self, refresh_manager_callback=None):
         super().__init__()
         self.refresh_manager_callback = refresh_manager_callback
+        self.all_data = []
         self.init_ui()
         self.refresh()
 
@@ -42,6 +44,19 @@ class PegawaiPage(QWidget):
         hdr.addStretch()
         hdr.addWidget(add_btn)
         layout.addLayout(hdr)
+
+        filter_row = QHBoxLayout()
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Cari nama atau username pegawai...")
+        self.search_input.textChanged.connect(self.apply_filter)
+
+        self.filter_jabatan = QComboBox()
+        self.filter_jabatan.addItems(["Semua Jabatan", "Manajer", "Staf"])
+        self.filter_jabatan.currentTextChanged.connect(self.apply_filter)
+
+        filter_row.addWidget(self.search_input, 3)
+        filter_row.addWidget(self.filter_jabatan, 1)
+        layout.addLayout(filter_row)
 
         # Tabel
         self.table = QTableWidget()
@@ -78,7 +93,21 @@ class PegawaiPage(QWidget):
         layout.addLayout(action_row)
 
     def refresh(self):
-        data = database.get_all_pegawai()
+        self.all_data = database.get_all_pegawai()
+        self.apply_filter()
+        # Sync ke manager dashboard jika ada callback
+        if self.refresh_manager_callback:
+            self.refresh_manager_callback()
+
+    def apply_filter(self):
+        search = self.search_input.text().strip().lower()
+        jabatan_filter = self.filter_jabatan.currentText()
+        data = [
+            d for d in self.all_data
+            if (not search or search in d['nama'].lower() or search in d['username'].lower())
+            and (jabatan_filter == "Semua Jabatan" or d['jabatan'] == jabatan_filter)
+        ]
+
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
         for row, d in enumerate(data):
@@ -95,9 +124,6 @@ class PegawaiPage(QWidget):
                 item.setBackground(bg)
                 self.table.setItem(row, col_offset + 1, item)
         self.table.setSortingEnabled(True)
-        # Sync ke manager dashboard jika ada callback
-        if self.refresh_manager_callback:
-            self.refresh_manager_callback()
 
     def _header_clicked(self, logical_index):
         if logical_index != COL_CHECK:

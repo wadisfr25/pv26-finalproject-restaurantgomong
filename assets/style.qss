@@ -96,6 +96,22 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
     margin-bottom: 4px;
 }
 #dateLabel { color: #8A96A3; font-size: 13px; }
+#infoBanner {
+    color: #35506B;
+    font-size: 12px;
+    background: #EAF2FF;
+    border: 1px solid #D6E6FF;
+    border-radius: 8px;
+    padding: 9px 12px;
+}
+#emptyState {
+    color: #8A96A3;
+    font-size: 13px;
+    padding: 36px;
+    background: white;
+    border: 1px dashed #C5CDD8;
+    border-radius: 12px;
+}
 
 /* ── Cards ───────────────────────────────────────────────────── */
 #dashCard {

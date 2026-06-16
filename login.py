@@ -3,14 +3,14 @@ from PySide6.QtWidgets import (QWidget, QLabel, QLineEdit, QPushButton,
                                QVBoxLayout, QMessageBox, QCheckBox)
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QPixmap
-import database
+import database.database as database
 
 
 class LoginForm(QWidget):
     def __init__(self, switch_to_dashboard, switch_to_login_func):
         super().__init__()
         self.switch_to_dashboard = switch_to_dashboard
-        self.settings = QSettings("RestaurantWadis", "ReservasiApp")
+        self.settings = QSettings("RestaurantGomong", "ReservasiApp")
         self.setup_ui()
         self.load_settings()
 
@@ -26,7 +26,7 @@ class LoginForm(QWidget):
         container.setLayout(container_layout)
         container.setFixedWidth(480)
 
-        heading = QLabel("🍽️ Restaurant Wadis")
+        heading = QLabel("🍽️ Restaurant Gomong")
         heading.setAlignment(Qt.AlignCenter)
         heading.setObjectName("loginHeading")
 

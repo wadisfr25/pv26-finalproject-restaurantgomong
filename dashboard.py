@@ -76,7 +76,7 @@ class MainDashboard(QWidget):
         h_layout = QVBoxLayout(header)
         h_layout.setContentsMargins(15, 25, 15, 20)
 
-        title = QLabel("🍽️ Wadis")
+        title = QLabel("🍽️ Gomong")
         title.setObjectName("sidebarTitle")
         title.setAlignment(Qt.AlignCenter)
 

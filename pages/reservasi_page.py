@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QDialog, QCheckBox)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-import database
+import database.database as database
 from dialogs.reservasi_dialog import ReservasiDialog
 
 STATUS_COLORS = {

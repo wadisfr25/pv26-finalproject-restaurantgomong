@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                                QLabel, QLineEdit, QSpinBox, QComboBox, QDateEdit,
                                QTextEdit, QPushButton, QMessageBox, QGroupBox)
 from PySide6.QtCore import Qt, QDate
-import database
+import database.database as database
 
 JAM_OPERASIONAL = [
     "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
@@ -170,6 +170,10 @@ class ReservasiDialog(QDialog):
             QMessageBox.warning(self, "Validasi",
                                 "Nomor telepon tidak valid (min. 10 digit angka).")
             self.telepon_input.setFocus()
+            return
+        if meja_id is None:
+            QMessageBox.warning(self, "Validasi", "Meja wajib dipilih untuk reservasi.")
+            self.meja_combo.setFocus()
             return
 
         ok, err = database.simpan_reservasi(

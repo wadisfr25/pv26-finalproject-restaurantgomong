@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                                QLabel, QLineEdit, QComboBox, QPushButton,
                                QMessageBox, QGroupBox, QCheckBox)
 from PySide6.QtCore import Qt
-import database
+import database.database as database
 
 
 class PegawaiDialog(QDialog):

@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QTableWidget, QTableWidgetItem, QHeaderView, QFrame)
 from PySide6.QtCore import Qt
 from datetime import datetime
-import database
+import database.database as database
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -165,3 +165,4 @@ class DashboardPage(QWidget):
             ax.set_title('Distribusi Status Reservasi', fontsize=10)
         self.figure.tight_layout()
         self.canvas.draw()
+        

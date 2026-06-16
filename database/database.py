@@ -1,9 +1,8 @@
 import sqlite3
 import hashlib
-from datetime import datetime, timedelta
-import random
+from datetime import datetime
 
-DB_NAME = "restaurant_wadis.db"
+DB_NAME = "restaurant_gomong.db"
 
 
 def get_db_connection():
@@ -79,7 +78,7 @@ def init_pegawai():
     if cursor.execute("SELECT COUNT(*) FROM pegawai").fetchone()[0] == 0:
         def hp(p): return hashlib.sha256(p.encode()).hexdigest()
         data = [
-            ('Admin Wadis', 'admin', hp('admin123'), 'Manajer'),
+            ('Admin Gomong', 'admin', hp('admin123'), 'Manajer'),
             ('dest', 'dest', hp('dest123'), 'Staf'),
         ]
         cursor.executemany(
@@ -132,54 +131,45 @@ def init_meja():
     conn.close()
 
 
-def init_dummy_reservasi():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if cursor.execute("SELECT COUNT(*) FROM reservasi").fetchone()[0] == 0:
-        today = datetime.now()
-        names = []
-        phones = []
-        times = []
-        statuses = []
-
-        reservasis = []
-        for i in range(8):
-            day_offset = random.randint(-3, 3)
-            tanggal = (today + timedelta(days=day_offset)).strftime("%Y-%m-%d")
-            jumlah = random.choice([2, 2, 3, 4, 5, 6, 7, 8])
-            status = random.choice(statuses)
-
-            meja = cursor.execute(
-                "SELECT id FROM meja WHERE kapasitas >= ? AND status = 'Tersedia' LIMIT 1",
-                (jumlah,)
-            ).fetchone()
-            meja_id = meja['id'] if meja else None
-
-            # Tandai meja terisi jika status aktif
-            if meja_id and status in ('Menunggu', 'Dikonfirmasi', 'Duduk'):
-                cursor.execute("UPDATE meja SET status = 'Terisi' WHERE id = ?", (meja_id,))
-
-            reservasis.append((
-                names[i], phones[i], jumlah, tanggal, random.choice(times),
-                meja_id, 1, status,
-                'Tidak ada catatan khusus' if i % 2 == 0 else '',
-                (today - timedelta(days=random.randint(0, 5))).strftime("%Y-%m-%d %H:%M:%S"),
-                random.randint(1, 2)
-            ))
-
-        cursor.executemany("""
-            INSERT INTO reservasi
-                (nama_tamu, no_telepon, jumlah_tamu, tanggal, waktu,
-                 meja_id, lantai, status, catatan, created_at, id_pegawai)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)
-        """, reservasis)
-        conn.commit()
-    conn.close()
-
-
 # ── MEJA STATUS AUTO-SYNC ────────────────────────────────────────────────────
 
 STATUS_AKTIF = ('Menunggu', 'Dikonfirmasi', 'Duduk')
+
+def _active_status_placeholders():
+    return ','.join('?' * len(STATUS_AKTIF))
+
+
+def _get_konflik_reservasi(conn, meja_id, tanggal, waktu, exclude_reservasi_id=None):
+    if not meja_id:
+        return None
+
+    exclude_clause = "AND r.id != ?" if exclude_reservasi_id else ""
+    params = [meja_id, tanggal, waktu, *STATUS_AKTIF]
+    if exclude_reservasi_id:
+        params.append(exclude_reservasi_id)
+
+    return conn.execute(f"""
+        SELECT r.id, r.nama_tamu, r.tanggal, r.waktu, r.status, m.nomor_meja
+        FROM reservasi r
+        LEFT JOIN meja m ON r.meja_id = m.id
+        WHERE r.meja_id = ?
+          AND r.tanggal = ?
+          AND r.waktu = ?
+          AND r.status IN ({_active_status_placeholders()})
+          {exclude_clause}
+        ORDER BY r.id ASC
+        LIMIT 1
+    """, params).fetchone()
+
+
+def _pesan_konflik_reservasi(konflik):
+    return (
+        f"Meja {konflik['nomor_meja']} sudah dipesan oleh {konflik['nama_tamu']} "
+        f"pada {konflik['tanggal']} jam {konflik['waktu']} "
+        f"dengan status {konflik['status']}. "
+        "Meja baru bisa diberikan lagi setelah reservasi sebelumnya selesai atau dibatalkan."
+    )
+
 
 def sync_status_meja(conn, meja_id):
     """
@@ -196,9 +186,8 @@ def sync_status_meja(conn, meja_id):
     if not current or current['status'] == 'Maintenance':
         return
 
-    placeholders = ','.join('?' * len(STATUS_AKTIF))
     ada_aktif = conn.execute(
-        f"SELECT COUNT(*) FROM reservasi WHERE meja_id = ? AND status IN ({placeholders})",
+        f"SELECT COUNT(*) FROM reservasi WHERE meja_id = ? AND status IN ({_active_status_placeholders()})",
         (meja_id, *STATUS_AKTIF)
     ).fetchone()[0]
 
@@ -306,7 +295,7 @@ def get_available_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None)
     conn = get_db_connection()
 
     exclude_clause = "AND r.id != ?" if exclude_reservasi_id else ""
-    params = [jumlah_tamu, tanggal, waktu]
+    params = [jumlah_tamu, tanggal, waktu, *STATUS_AKTIF]
     if exclude_reservasi_id:
         params.append(exclude_reservasi_id)
 
@@ -317,7 +306,7 @@ def get_available_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None)
           AND m.id NOT IN (
               SELECT r.meja_id FROM reservasi r
               WHERE r.tanggal = ? AND r.waktu = ?
-                AND r.status NOT IN ('Dibatalkan', 'Selesai')
+                AND r.status IN ({_active_status_placeholders()})
                 AND r.meja_id IS NOT NULL
                 {exclude_clause}
           )
@@ -336,6 +325,13 @@ def simpan_reservasi(nama, telepon, jumlah, tanggal, waktu, meja_id, status, cat
     """
     conn = get_db_connection()
     try:
+        if meja_id and status in STATUS_AKTIF:
+            konflik = _get_konflik_reservasi(
+                conn, meja_id, tanggal, waktu, reservasi_id
+            )
+            if konflik:
+                return False, _pesan_konflik_reservasi(konflik)
+
         if reservasi_id:
             # Ambil meja_id lama sebelum diupdate
             lama = conn.execute(
@@ -402,9 +398,16 @@ def update_status_reservasi(reservasi_id, new_status):
     conn = get_db_connection()
     try:
         row = conn.execute(
-            "SELECT meja_id FROM reservasi WHERE id = ?", (reservasi_id,)
+            "SELECT meja_id, tanggal, waktu FROM reservasi WHERE id = ?", (reservasi_id,)
         ).fetchone()
         meja_id = row['meja_id'] if row else None
+
+        if row and meja_id and new_status in STATUS_AKTIF:
+            konflik = _get_konflik_reservasi(
+                conn, meja_id, row['tanggal'], row['waktu'], reservasi_id
+            )
+            if konflik:
+                return False, _pesan_konflik_reservasi(konflik)
 
         conn.execute(
             "UPDATE reservasi SET status = ? WHERE id = ?", (new_status, reservasi_id)
@@ -418,8 +421,75 @@ def update_status_reservasi(reservasi_id, new_status):
         conn.close()
 
 
+def get_all_meja():
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT id, nomor_meja, kapasitas, lantai, jenis, status FROM meja ORDER BY kapasitas, nomor_meja"
+    ).fetchall()
+    conn.close()
+    return rows
+
+
+def get_meja_by_id(meja_id):
+    conn = get_db_connection()
+    row = conn.execute(
+        "SELECT id, nomor_meja, kapasitas, lantai, jenis, status FROM meja WHERE id = ?",
+        (meja_id,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def tambah_meja(nomor_meja, kapasitas, lantai, jenis, status):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            "INSERT INTO meja (nomor_meja, kapasitas, lantai, jenis, status) VALUES (?,?,?,?,?)",
+            (nomor_meja, kapasitas, lantai, jenis, status)
+        )
+        conn.commit()
+        return True, None
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
+
+
+def edit_meja(meja_id, nomor_meja, kapasitas, lantai, jenis, status):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            "UPDATE meja SET nomor_meja=?, kapasitas=?, lantai=?, jenis=?, status=? WHERE id=?",
+            (nomor_meja, kapasitas, lantai, jenis, status, meja_id)
+        )
+        if status == 'Tersedia':
+            sync_status_meja(conn, meja_id)
+        conn.commit()
+        return True, None
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
+
+
+def hapus_meja(meja_id):
+    conn = get_db_connection()
+    try:
+        dipakai = conn.execute(
+            "SELECT COUNT(*) FROM reservasi WHERE meja_id = ?", (meja_id,)
+        ).fetchone()[0]
+        if dipakai:
+            return False, "Meja masih terhubung dengan data reservasi."
+        conn.execute("DELETE FROM meja WHERE id = ?", (meja_id,))
+        conn.commit()
+        return True, None
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
+
+
 def init_database():
     create_tables()
     init_pegawai()
     init_meja()
-    init_dummy_reservasi()

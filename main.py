@@ -6,7 +6,7 @@ from PySide6.QtCore import QSettings, Qt
 
 from login import LoginForm
 from dashboard import MainDashboard
-import database
+import database.database as database
 
 
 class MainApp(QMainWindow):
@@ -14,8 +14,8 @@ class MainApp(QMainWindow):
         super().__init__()
         database.init_database()
 
-        self.setWindowTitle("Restaurant Wadis — Sistem Reservasi")
-        self.settings = QSettings("RestaurantWadis", "ReservasiApp")
+        self.setWindowTitle("Restaurant Gomong — Sistem Reservasi")
+        self.settings = QSettings("RestaurantGomong", "ReservasiApp")
 
         self._create_menu_bar()
         self._create_status_bar()
@@ -57,7 +57,7 @@ class MainApp(QMainWindow):
         self.setStatusBar(status_bar)
         # Isi dengan nama & NIM anggota kelompok (tidak dapat diedit)
         label = QLabel(
-            "🍽️ Restaurant Wadis  |  Nama A (NIM)  |  Nama B (NIM)  |  Nama C (NIM)"
+            "🍽️ Restaurant Gomong |  Wadis Friendly (F1D02310094)  |  Lalu Farras Hanif Aslam (F1D02410118)  |  Muh. Rizky Destiawansyah (F1D02410146)"
         )
         label.setStyleSheet("color: #777; font-size: 11px;")
         status_bar.addPermanentWidget(label)
@@ -65,10 +65,12 @@ class MainApp(QMainWindow):
 
     def _load_stylesheet(self):
         try:
-            with open("assets/style.qss", "r") as f:
+            with open("assets/style.qss", "r", encoding="utf-8") as f:
                 self.setStyleSheet(f.read())
         except FileNotFoundError:
             print("style.qss tidak ditemukan, tampilan default digunakan.")
+        except UnicodeDecodeError:
+            print("style.qss gagal dibaca sebagai UTF-8, tampilan default digunakan.")
 
     def resizeAndCenter(self, width_ratio=0.6, height_ratio=0.6):
         screen = self.screen().availableGeometry()
@@ -86,14 +88,14 @@ class MainApp(QMainWindow):
         self.stacked_widget.addWidget(self.dashboard)
         self.stacked_widget.setCurrentWidget(self.dashboard)
         self.resizeAndCenter(0.88, 0.92)
-        self.setWindowTitle(f"Restaurant Wadis — {nama_pegawai}")
+        self.setWindowTitle(f"Restaurant Gomong — {nama_pegawai}")
         self.logout_action.setEnabled(True)
 
     def switch_to_login(self):
         self.logout_action.setEnabled(False)
         self.statusBar().showMessage("Silakan login untuk memulai.")
         self.stacked_widget.setCurrentWidget(self.login_form)
-        self.setWindowTitle("Restaurant Wadis — Login")
+        self.setWindowTitle("Restaurant Gomong — Login")
         self.resizeAndCenter(0.4, 0.6)
 
     def logout(self):
@@ -114,7 +116,7 @@ class MainApp(QMainWindow):
     def show_about(self):
         QMessageBox.about(
             self, "Tentang Aplikasi",
-            "<h3>🍽️ Restaurant Wadis</h3>"
+            "<h3>🍽️ Restaurant Gomong</h3>"
             "<p>Sistem Reservasi Meja Restaurant</p>"
             "<p>Lantai 1: Meja Kecil (≤ 4 orang)<br>"
             "Lantai 2: Meja Besar (5–8 orang)</p>"

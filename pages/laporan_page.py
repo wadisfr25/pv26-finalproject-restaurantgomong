@@ -2,10 +2,13 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QPushButton, QTableWidget, QTableWidgetItem,
                                QHeaderView, QComboBox, QDateEdit, QMessageBox,
                                QFileDialog, QGroupBox)
-from PySide6.QtCore import Qt, QDate
+from PySide6.QtCore import QDate
+from PySide6.QtGui import QPdfWriter, QTextDocument
 from datetime import datetime
-import database
 import csv
+import html
+
+import database.database as database
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -22,11 +25,10 @@ class LaporanPage(QWidget):
         layout.setContentsMargins(28, 24, 28, 24)
         layout.setSpacing(18)
 
-        title = QLabel("📊 Laporan & Statistik")
+        title = QLabel("Laporan & Statistik")
         title.setObjectName("pageHeader")
         layout.addWidget(title)
 
-        # Filter group — tanpa filter lantai
         filter_grp = QGroupBox("Filter Data")
         f_lay = QHBoxLayout(filter_grp)
 
@@ -46,24 +48,27 @@ class LaporanPage(QWidget):
         )
         f_lay.addWidget(self.filter_status)
 
-        apply_btn = QPushButton("🔍  Terapkan")
+        apply_btn = QPushButton("Terapkan")
         apply_btn.clicked.connect(self.refresh)
         f_lay.addWidget(apply_btn)
 
         f_lay.addStretch()
 
-        export_btn = QPushButton("📥  Export CSV")
+        export_btn = QPushButton("Export CSV")
         export_btn.setObjectName("primaryButton")
         export_btn.clicked.connect(self.export_csv)
         f_lay.addWidget(export_btn)
 
+        export_pdf_btn = QPushButton("Export PDF")
+        export_pdf_btn.setObjectName("successButton")
+        export_pdf_btn.clicked.connect(self.export_pdf)
+        f_lay.addWidget(export_pdf_btn)
+
         layout.addWidget(filter_grp)
 
-        # Content
         content = QHBoxLayout()
         content.setSpacing(16)
 
-        # Table — tanpa kolom Lantai
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
@@ -88,7 +93,7 @@ class LaporanPage(QWidget):
 
     def refresh(self):
         date_from = self.date_from.date().toString("yyyy-MM-dd")
-        date_to   = self.date_to.date().toString("yyyy-MM-dd")
+        date_to = self.date_to.date().toString("yyyy-MM-dd")
         status_filter = self.filter_status.currentText()
 
         query = """
@@ -106,6 +111,7 @@ class LaporanPage(QWidget):
         self.all_data = conn.execute(query, params).fetchall()
         conn.close()
 
+        self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
         for row, d in enumerate(self.all_data):
             self.table.insertRow(row)
@@ -114,6 +120,7 @@ class LaporanPage(QWidget):
                 d['tanggal'], d['waktu'], d['status']
             ]):
                 self.table.setItem(row, col, QTableWidgetItem(val))
+        self.table.setSortingEnabled(True)
 
         self._update_chart()
 
@@ -128,12 +135,15 @@ class LaporanPage(QWidget):
 
         if status_counts:
             colors = {
-                'Menunggu': '#F39C12', 'Dikonfirmasi': '#3498DB',
-                'Duduk': '#27AE60', 'Selesai': '#95A5A6', 'Dibatalkan': '#E74C3C',
+                'Menunggu': '#F39C12',
+                'Dikonfirmasi': '#3498DB',
+                'Duduk': '#27AE60',
+                'Selesai': '#95A5A6',
+                'Dibatalkan': '#E74C3C',
             }
             labels = list(status_counts.keys())
             values = list(status_counts.values())
-            bar_colors = [colors.get(l, '#BDC3C7') for l in labels]
+            bar_colors = [colors.get(label, '#BDC3C7') for label in labels]
             bars = ax.bar(labels, values, color=bar_colors, width=0.5)
             ax.set_title('Distribusi Status Reservasi', fontsize=11)
             ax.bar_label(bars, padding=3, fontsize=9)
@@ -151,19 +161,90 @@ class LaporanPage(QWidget):
             return
         path, _ = QFileDialog.getSaveFileName(
             self, "Export CSV",
-            f"laporan_wadis_{datetime.now().strftime('%Y%m%d')}.csv",
+            f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.csv",
             "CSV Files (*.csv)"
         )
-        if path:
-            try:
-                with open(path, 'w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(["ID", "Nama Tamu", "Jumlah Tamu", "Tanggal", "Waktu", "Status"])
-                    for d in self.all_data:
-                        writer.writerow([
-                            d['id'], d['nama_tamu'], d['jumlah_tamu'],
-                            d['tanggal'], d['waktu'], d['status']
-                        ])
-                QMessageBox.information(self, "Sukses", f"Data berhasil diekspor:\n{path}")
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Gagal export: {e}")
+        if not path:
+            return
+        if not path.lower().endswith(".csv"):
+            path += ".csv"
+
+        try:
+            with open(path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["ID", "Nama Tamu", "Jumlah Tamu", "Tanggal", "Waktu", "Status"])
+                for d in self.all_data:
+                    writer.writerow([
+                        d['id'], d['nama_tamu'], d['jumlah_tamu'],
+                        d['tanggal'], d['waktu'], d['status']
+                    ])
+            QMessageBox.information(self, "Sukses", f"Data berhasil diekspor:\n{path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Gagal export CSV: {e}")
+
+    def export_pdf(self):
+        if not self.all_data:
+            QMessageBox.warning(self, "Peringatan", "Tidak ada data untuk diekspor.")
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export PDF",
+            f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.pdf",
+            "PDF Files (*.pdf)"
+        )
+        if not path:
+            return
+        if not path.lower().endswith(".pdf"):
+            path += ".pdf"
+
+        date_from = self.date_from.date().toString("yyyy-MM-dd")
+        date_to = self.date_to.date().toString("yyyy-MM-dd")
+        status_filter = self.filter_status.currentText()
+
+        rows_html = ""
+        for d in self.all_data:
+            rows_html += (
+                "<tr>"
+                f"<td>{html.escape(str(d['id']))}</td>"
+                f"<td>{html.escape(d['nama_tamu'])}</td>"
+                f"<td>{html.escape(str(d['jumlah_tamu']))}</td>"
+                f"<td>{html.escape(d['tanggal'])}</td>"
+                f"<td>{html.escape(d['waktu'])}</td>"
+                f"<td>{html.escape(d['status'])}</td>"
+                "</tr>"
+            )
+
+        doc = QTextDocument()
+        doc.setHtml(f"""
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; color: #1E2D3D; }}
+                    h1 {{ font-size: 20px; margin-bottom: 4px; }}
+                    p {{ color: #566573; font-size: 11px; }}
+                    table {{ border-collapse: collapse; width: 100%; margin-top: 12px; }}
+                    th {{ background: #F0F2F5; font-weight: bold; }}
+                    th, td {{ border: 1px solid #D6DBDF; padding: 6px; font-size: 10px; }}
+                </style>
+            </head>
+            <body>
+                <h1>Laporan Reservasi Restaurant Gomong</h1>
+                <p>Periode: {date_from} sampai {date_to} | Status: {html.escape(status_filter)}</p>
+                <table>
+                    <tr>
+                        <th>ID</th><th>Nama Tamu</th><th>Jumlah Tamu</th>
+                        <th>Tanggal</th><th>Waktu</th><th>Status</th>
+                    </tr>
+                    {rows_html}
+                </table>
+            </body>
+            </html>
+        """)
+
+        try:
+            writer = QPdfWriter(path)
+            writer.setTitle("Laporan Reservasi Restaurant Gomong")
+            doc.print_(writer)
+            QMessageBox.information(self, "Sukses", f"Data berhasil diekspor:\n{path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Gagal export PDF: {e}")
