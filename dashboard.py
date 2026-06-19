@@ -113,10 +113,8 @@ class MainDashboard(QWidget):
         layout.addStretch()
 
         role_badge = QLabel(f"🔑  {self.jabatan}")
+        role_badge.setObjectName("sidebarRole")
         role_badge.setAlignment(Qt.AlignCenter)
-        role_badge.setStyleSheet(
-            "color: #F39C12; font-size: 11px; font-weight: bold; padding: 4px;"
-        )
         layout.addWidget(role_badge)
 
         footer = QWidget()

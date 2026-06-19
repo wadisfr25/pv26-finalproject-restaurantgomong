@@ -20,29 +20,125 @@ QScrollBar::handle:vertical:hover { background: #99A8B8; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 
 /* ── Login ───────────────────────────────────────────────────── */
-#loginContainer  {
-    background: white;
-    border-radius: 20px;
-    border: 1px solid #E8ECF0;
+#loginPage {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #F8FAFC, stop:0.52 #F1F5F9, stop:1 #FFF7ED);
 }
-#loginHeading    { font-size: 28px; font-weight: 700; color: #C0392B; letter-spacing: -0.5px; }
-#loginSubHeading { font-size: 13px; color: #8A96A3; margin-bottom: 8px; }
-#formTitle       { font-weight: 600; color: #4A5568; font-size: 12px; letter-spacing: 0.5px; }
+#loginContainer {
+    background: rgba(255, 255, 255, 245);
+    border-radius: 18px;
+    border: 1px solid #E2E8F0;
+}
+#loginBadge {
+    background: #FFF1F2;
+    color: #B42318;
+    border: 1px solid #FFE4E6;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+#loginHeading {
+    font-size: 31px;
+    font-weight: 800;
+    color: #172033;
+    letter-spacing: 0px;
+    background: transparent;
+}
+#loginSubHeading {
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 8px;
+    background: transparent;
+}
+#loginHint {
+    color: #94A3B8;
+    font-size: 11px;
+    background: transparent;
+    padding-top: 2px;
+}
+#loginContainer QLineEdit {
+    min-height: 28px;
+    font-size: 13px;
+    border-radius: 10px;
+    border: 1.5px solid #E2E8F0;
+    background: #FFFFFF;
+    padding: 9px 13px;
+}
+#loginContainer QLineEdit:hover {
+    border-color: #CBD5E1;
+    background: #FCFDFF;
+}
+#loginContainer QLineEdit:focus {
+    border-color: #C0392B;
+    background: #FFFFFF;
+}
+#formTitle {
+    font-weight: 700;
+    color: #334155;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    background: transparent;
+}
+#checkBox {
+    background: transparent;
+    color: #64748B;
+    font-size: 12px;
+    spacing: 8px;
+}
+#checkBox::indicator {
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 4px;
+    background: white;
+}
+#checkBox::indicator:hover {
+    border-color: #C0392B;
+}
+#checkBox::indicator:checked {
+    image: url(assets/checkmark-red.svg);
+    background: white;
+    border-color: #C0392B;
+}
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
 #sidebar {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #1A2035, stop:1 #232D45);
+    background: #1F2937;
     border-right: 1px solid #111827;
 }
-#sidebarHeader { background: rgba(0,0,0,0.25); }
-#sidebarTitle  {
-    font-size: 22px; font-weight: 800; color: #FF6B6B;
-    letter-spacing: -0.5px;
+#sidebar QLabel {
+    background: transparent;
 }
-#sidebarSubtitle { font-size: 11px; color: #6B7A99; letter-spacing: 0.3px; }
-#sidebarFooter { background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); }
-#sidebarUser   { color: #A0AEC0; font-size: 12px; }
+#sidebarHeader {
+    background: #172033;
+    border-bottom: 1px solid #374151;
+}
+#sidebarTitle  {
+    background: transparent;
+    font-size: 24px;
+    font-weight: 800;
+    color: #FF6B6B;
+    letter-spacing: 0px;
+    padding-top: 2px;
+}
+#sidebarSubtitle {
+    background: transparent;
+    font-size: 11px;
+    color: #CBD5E1;
+    letter-spacing: 0.3px;
+    padding-top: 2px;
+}
+#sidebarFooter { background: #1F2937; border-top: 1px solid #374151; }
+#sidebarUser   { background: transparent; color: #A0AEC0; font-size: 12px; }
+#sidebarRole {
+    background: transparent;
+    color: #FBBF24;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px;
+}
 
 #sidebarButton {
     text-align: left;
@@ -55,21 +151,21 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
     font-weight: 500;
 }
 #sidebarButton:hover {
-    background: rgba(255,255,255,0.07);
+    background: #2F3B4C;
     color: #E2E8F0;
-    border-left: 3px solid rgba(255,107,107,0.5);
+    border-left: 3px solid #FF6B6B;
 }
 #sidebarButton:checked {
-    background: rgba(231,76,60,0.15);
+    background: #374151;
     color: #FF6B6B;
     font-weight: 700;
     border-left: 3px solid #FF6B6B;
 }
 
 #logoutButton {
-    background: rgba(231,76,60,0.15);
+    background: transparent;
     color: #FF6B6B;
-    border: 1px solid rgba(231,76,60,0.3);
+    border: 1px solid #FF6B6B;
     border-radius: 8px;
     padding: 8px;
     font-weight: 600;
@@ -87,6 +183,11 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
     font-weight: 700;
     color: #1E2D3D;
     letter-spacing: -0.3px;
+}
+#pageSubtitle {
+    color: #64748B;
+    font-size: 12px;
+    background: transparent;
 }
 #sectionTitle {
     font-size: 13px;
@@ -117,7 +218,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 #dashCard {
     background: white;
     border-radius: 14px;
-    border: 1px solid #E8ECF4;
+    border: 1.5px solid #DDE4EC;
     border-left: 4px solid #3498DB;
     min-height: 86px;
 }
@@ -132,7 +233,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 /* ── Tables ──────────────────────────────────────────────────── */
 QTableWidget {
     background: white;
-    border: 1px solid #E8ECF4;
+    border: 1.5px solid #DDE4EC;
     border-radius: 12px;
     gridline-color: #F0F2F5;
     selection-background-color: transparent;
@@ -203,36 +304,59 @@ QPushButton:hover {
     color: #1E2D3D;
 }
 
+#secondaryButton {
+    background: white;
+    color: #35506B;
+    border: 1.5px solid #CBD5E1;
+    font-weight: 700;
+}
+#secondaryButton:hover {
+    background: #F7F9FC;
+    border-color: #94A3B8;
+}
+
 #primaryButton {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #E74C3C, stop:1 #C0392B);
+    background: #C0392B;
     color: white;
     border: none;
     font-weight: 700;
     padding: 9px 20px;
 }
 #primaryButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #FF5A47, stop:1 #D44535);
+    background: #E74C3C;
+}
+#loginContainer #primaryButton {
+    background: #C0392B;
+    color: white;
+    border: 1px solid #C0392B;
+    border-radius: 10px;
+    font-weight: 800;
+    padding: 10px 20px;
+}
+#loginContainer #primaryButton:hover {
+    background: #D64535;
+    border-color: #D64535;
+}
+#loginContainer #primaryButton:pressed {
+    background: #A93226;
+    border-color: #A93226;
 }
 
 #successButton {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #27AE60, stop:1 #1E8449);
+    background: #1E8449;
     color: white;
     border: none;
     font-weight: 700;
     padding: 9px 20px;
 }
 #successButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2ECC71, stop:1 #27AE60);
+    background: #27AE60;
 }
 
 #dangerButton {
-    background: rgba(231,76,60,0.08);
+    background: white;
     color: #E74C3C;
-    border: 1.5px solid rgba(231,76,60,0.25);
+    border: 1.5px solid #E74C3C;
     font-weight: 600;
 }
 #dangerButton:hover {
@@ -246,7 +370,7 @@ QGroupBox {
     font-weight: 700;
     font-size: 12px;
     color: #4A5568;
-    border: 1.5px solid #E8ECF4;
+    border: 1.5px solid #DDE4EC;
     border-radius: 14px;
     margin-top: 14px;
     padding: 16px 12px 12px 12px;
@@ -265,11 +389,115 @@ QGroupBox::title {
 /* ── Floor / Meja cards ──────────────────────────────────────── */
 #floorGroup {
     font-size: 13px; font-weight: 700; color: #2C3E50;
-    background: white; border-radius: 14px; border: 1.5px solid #E8ECF4;
+    background: white; border-radius: 14px; border: 1.5px solid #DDE4EC;
     padding: 15px;
+}
+
+#mejaToolbar {
+    background: white;
+    border: 1.5px solid #DDE4EC;
+    border-radius: 12px;
+}
+#mejaToolbar QLabel {
+    background: transparent;
+}
+#mejaSummary {
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 /* ── Dialog ──────────────────────────────────────────────────── */
 QDialog {
     background: #F0F2F5;
+}
+
+/* Report filter */
+#reportFilterGroup {
+    background: white;
+    border: 1.5px solid #DDE4EC;
+    border-radius: 14px;
+    margin-top: 14px;
+}
+#reportFilterGroup::title {
+    subcontrol-origin: margin;
+    left: 18px;
+    padding: 0 8px;
+    color: #334155;
+    background: white;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+#reportFilterField {
+    background: transparent;
+    min-width: 136px;
+    max-width: 160px;
+}
+#reportFilterLabel {
+    background: transparent;
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+#reportFilterGroup QDateEdit,
+#reportFilterGroup QComboBox {
+    min-height: 22px;
+    border-radius: 9px;
+    border: 1.5px solid #E2E8F0;
+    background: #F8FAFC;
+    padding: 7px 11px;
+    color: #1E2D3D;
+    font-weight: 600;
+}
+#reportStatusFilter {
+    max-width: 150px;
+}
+#reportFilterGroup QDateEdit:hover,
+#reportFilterGroup QComboBox:hover {
+    border-color: #CBD5E1;
+    background: #FFFFFF;
+}
+#reportFilterGroup QDateEdit:focus,
+#reportFilterGroup QComboBox:focus {
+    border-color: #C0392B;
+    background: #FFFFFF;
+}
+QPushButton#reportApplyButton {
+    background: #1E2D3D;
+    color: #FFFFFF;
+    border: 1px solid #1E2D3D;
+    border-radius: 9px;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 800;
+    min-width: 108px;
+    min-height: 38px;
+    max-height: 38px;
+}
+QPushButton#reportApplyButton:hover {
+    background: #334155;
+    color: #FFFFFF;
+    border-color: #334155;
+}
+QPushButton#reportApplyButton:pressed {
+    background: #111827;
+    color: #FFFFFF;
+    border-color: #111827;
+}
+#reportFilterGroup #primaryButton,
+#reportFilterGroup #successButton {
+    border-radius: 9px;
+    margin-top: 0;
+    min-width: 104px;
+}
+#reportFilterSummary {
+    background: #F8FAFC;
+    color: #64748B;
+    border: 1px solid #EEF2F7;
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 600;
 }

@@ -11,10 +11,37 @@ from matplotlib.figure import Figure
 class StatCard(QFrame):
     def __init__(self, title, value, emoji="📌", color="#3498DB"):
         super().__init__()
+
         self.setObjectName("dashCard")
-        self.setStyleSheet(f"#dashCard {{ border-left: 4px solid {color}; }}")
+        self.setFixedHeight(80)  # tinggi card
+
+        self.setStyleSheet(f"""
+            QFrame#dashCard {{
+                background: white;
+                border: 1px solid #DDE4EC;
+                border-left: 4px solid {color};
+                border-radius: 10px;
+            }}
+
+            QLabel#cardValue {{
+                background: transparent;
+                border: none;
+                color: #1E293B;
+                font-size: 20px;
+                font-weight: 700;
+            }}
+
+            QLabel#cardTitle {{
+                background: transparent;
+                border: none;
+                color: #64748B;
+                font-size: 10px;
+            }}
+        """)
+
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 12, 18, 12)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(2)
 
         self.value_lbl = QLabel(str(value))
         self.value_lbl.setObjectName("cardValue")
@@ -23,7 +50,6 @@ class StatCard(QFrame):
         title_lbl = QLabel(f"{emoji} {title}")
         title_lbl.setObjectName("cardTitle")
         title_lbl.setAlignment(Qt.AlignCenter)
-        title_lbl.setWordWrap(True)
 
         layout.addWidget(self.value_lbl)
         layout.addWidget(title_lbl)

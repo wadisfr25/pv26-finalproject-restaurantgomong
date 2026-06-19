@@ -1,8 +1,9 @@
 import hashlib
 from PySide6.QtWidgets import (QWidget, QLabel, QLineEdit, QPushButton,
-                               QVBoxLayout, QMessageBox, QCheckBox)
+                               QVBoxLayout, QMessageBox, QCheckBox,
+                               QGraphicsDropShadowEffect)
 from PySide6.QtCore import Qt, QSettings
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QColor
 import database.database as database
 
 
@@ -15,22 +16,38 @@ class LoginForm(QWidget):
         self.load_settings()
 
     def setup_ui(self):
+        self.setObjectName("loginPage")
+
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
+        main_layout.setContentsMargins(24, 24, 24, 24)
 
         container = QWidget()
         container.setObjectName("loginContainer")
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(34)
+        shadow.setOffset(0, 14)
+        shadow.setColor(QColor(30, 45, 61, 34))
+        container.setGraphicsEffect(shadow)
+
         container_layout = QVBoxLayout()
-        container_layout.setContentsMargins(50, 40, 50, 40)
+        container_layout.setContentsMargins(50, 44, 50, 44)
+        container_layout.setSpacing(13)
         container_layout.setAlignment(Qt.AlignCenter)
         container.setLayout(container_layout)
-        container.setFixedWidth(480)
+        container.setFixedWidth(500)
+
+        badge = QLabel("ADMIN ACCESS")
+        badge.setAlignment(Qt.AlignCenter)
+        badge.setObjectName("loginBadge")
 
         heading = QLabel("🍽️ Restaurant Gomong")
+        heading.setText("Restaurant Gomong")
         heading.setAlignment(Qt.AlignCenter)
         heading.setObjectName("loginHeading")
 
         subheading = QLabel("Sistem Reservasi Meja — Silakan Login")
+        subheading.setText("Dashboard Reservasi & Manajemen Restoran")
         subheading.setAlignment(Qt.AlignCenter)
         subheading.setObjectName("loginSubHeading")
 
@@ -48,17 +65,18 @@ class LoginForm(QWidget):
         self.remember_me = QCheckBox("Ingat Saya")
         self.remember_me.setObjectName("checkBox")
 
-        login_btn = QPushButton("Login")
+        login_btn = QPushButton("Masuk Admin")
         login_btn.setObjectName("primaryButton")
+        login_btn.setFixedHeight(42)
         login_btn.clicked.connect(self.check_login)
         self.password_input.returnPressed.connect(self.check_login)
 
         hint = QLabel("Demo: admin / admin123")
         hint.setAlignment(Qt.AlignCenter)
-        hint.setStyleSheet("color: #aaa; font-size: 11px;")
+        hint.setObjectName("loginHint")
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(10)
+        form_layout.setSpacing(11)
         form_layout.addWidget(username_label)
         form_layout.addWidget(self.username_input)
         form_layout.addWidget(password_label)
@@ -68,9 +86,10 @@ class LoginForm(QWidget):
         form_layout.addWidget(login_btn)
         form_layout.addWidget(hint)
 
+        container_layout.addWidget(badge)
         container_layout.addWidget(heading)
         container_layout.addWidget(subheading)
-        container_layout.addSpacing(20)
+        container_layout.addSpacing(18)
         container_layout.addLayout(form_layout)
 
         main_layout.addWidget(container)

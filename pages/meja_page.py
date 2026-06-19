@@ -13,9 +13,10 @@ class MejaCard(QFrame):
         super().__init__()
         self.meja_id = meja['id']
         self.callback = callback
+        self.setFrameShape(QFrame.NoFrame)
         self.setCursor(Qt.PointingHandCursor)
-        self.setMinimumSize(124, 98)
-        self.setMaximumHeight(108)
+        self.setMinimumSize(132, 104)
+        self.setMaximumHeight(112)
 
         status_color = {
             'Tersedia': ('#1E8449', '#EAF7EF'),
@@ -27,12 +28,15 @@ class MejaCard(QFrame):
         self.setStyleSheet(f"""
             MejaCard {{
                 background: {bg};
-                border: 2px solid {border};
+                border: 1.5px solid {border};
                 border-radius: 10px;
+            }}
+            MejaCard QLabel {{
+                background: transparent;
             }}
             MejaCard:hover {{
                 background: white;
-                border-width: 3px;
+                border: 2px solid {border};
             }}
         """)
 
@@ -80,17 +84,29 @@ class MejaPage(QWidget):
         layout.setSpacing(14)
 
         hdr = QHBoxLayout()
+        hdr.setSpacing(14)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(3)
         title = QLabel("Manajemen Meja")
         title.setObjectName("pageHeader")
 
+        subtitle = QLabel("Atur ketersediaan, kapasitas, dan status meja restoran.")
+        subtitle.setObjectName("pageSubtitle")
+        title_col.addWidget(title)
+        title_col.addWidget(subtitle)
+
         add_btn = QPushButton("+  Tambah Meja")
         add_btn.setObjectName("primaryButton")
+        add_btn.setFixedHeight(38)
         add_btn.clicked.connect(self.tambah_meja)
 
         refresh_btn = QPushButton("Refresh")
+        refresh_btn.setObjectName("secondaryButton")
+        refresh_btn.setFixedHeight(38)
         refresh_btn.clicked.connect(self.refresh)
 
-        hdr.addWidget(title)
+        hdr.addLayout(title_col)
         hdr.addStretch()
         hdr.addWidget(add_btn)
         hdr.addWidget(refresh_btn)
@@ -103,7 +119,15 @@ class MejaPage(QWidget):
         info_lbl.setWordWrap(True)
         layout.addWidget(info_lbl)
 
+        toolbar = QFrame()
+        toolbar.setObjectName("mejaToolbar")
+        toolbar.setFrameShape(QFrame.NoFrame)
+        toolbar_layout = QVBoxLayout(toolbar)
+        toolbar_layout.setContentsMargins(14, 12, 14, 12)
+        toolbar_layout.setSpacing(10)
+
         filter_row = QHBoxLayout()
+        filter_row.setSpacing(10)
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Cari nomor meja atau jenis...")
         self.search_input.textChanged.connect(self.apply_filter)
@@ -124,9 +148,10 @@ class MejaPage(QWidget):
         filter_row.addWidget(self.filter_status, 1)
         filter_row.addWidget(self.filter_kapasitas, 1)
         filter_row.addWidget(self.sort_combo, 1)
-        layout.addLayout(filter_row)
+        toolbar_layout.addLayout(filter_row)
 
         legend = QHBoxLayout()
+        legend.setSpacing(8)
         for label, color in [
             ("Tersedia", "#1E8449"),
             ("Terisi", "#C0392B"),
@@ -138,10 +163,11 @@ class MejaPage(QWidget):
             legend.addSpacing(16)
 
         self.summary_lbl = QLabel()
-        self.summary_lbl.setStyleSheet("color: #555; font-size: 11px;")
+        self.summary_lbl.setObjectName("mejaSummary")
         legend.addStretch()
         legend.addWidget(self.summary_lbl)
-        layout.addLayout(legend)
+        toolbar_layout.addLayout(legend)
+        layout.addWidget(toolbar)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)

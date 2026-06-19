@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QPushButton, QTableWidget, QTableWidgetItem,
                                QHeaderView, QComboBox, QDateEdit, QMessageBox,
-                               QFileDialog, QGroupBox)
-from PySide6.QtCore import QDate
+                               QFileDialog, QGroupBox, QAbstractSpinBox)
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtGui import QPdfWriter, QTextDocument
 from datetime import datetime
 import csv
@@ -11,6 +11,19 @@ import html
 import database.database as database
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+
+class ReportDateEdit(QDateEdit):
+    def __init__(self, date):
+        super().__init__(date)
+        self.setCalendarPopup(True)
+        self.setDisplayFormat("dd MMM yyyy")
+        self.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
+        self.setKeyboardTracking(False)
+        self.setFixedWidth(136)
+
+    def wheelEvent(self, event):
+        event.ignore()
 
 
 class LaporanPage(QWidget):
@@ -30,40 +43,67 @@ class LaporanPage(QWidget):
         layout.addWidget(title)
 
         filter_grp = QGroupBox("Filter Data")
-        f_lay = QHBoxLayout(filter_grp)
+        filter_grp.setObjectName("reportFilterGroup")
+        filter_layout = QVBoxLayout(filter_grp)
+        filter_layout.setContentsMargins(18, 20, 18, 16)
+        filter_layout.setSpacing(12)
 
-        f_lay.addWidget(QLabel("Dari:"))
-        self.date_from = QDateEdit(QDate.currentDate().addDays(-30))
-        self.date_from.setCalendarPopup(True)
-        f_lay.addWidget(self.date_from)
+        f_lay = QHBoxLayout()
+        f_lay.setSpacing(12)
 
-        f_lay.addWidget(QLabel("Sampai:"))
-        self.date_to = QDateEdit(QDate.currentDate())
-        self.date_to.setCalendarPopup(True)
-        f_lay.addWidget(self.date_to)
+        date_from_label = QLabel("Dari")
+        date_from_label.setObjectName("reportFilterLabel")
+        self.date_from = ReportDateEdit(QDate.currentDate().addDays(-30))
+        self.date_from.setObjectName("reportDateInput")
+        f_lay.addWidget(self._make_filter_field(date_from_label, self.date_from))
 
+        date_to_label = QLabel("Sampai")
+        date_to_label.setObjectName("reportFilterLabel")
+        self.date_to = ReportDateEdit(QDate.currentDate())
+        self.date_to.setObjectName("reportDateInput")
+        f_lay.addWidget(self._make_filter_field(date_to_label, self.date_to))
+
+        status_label = QLabel("Status")
+        status_label.setObjectName("reportFilterLabel")
         self.filter_status = QComboBox()
+        self.filter_status.setObjectName("reportStatusFilter")
+        self.filter_status.setFixedWidth(150)
         self.filter_status.addItems(
             ["Semua Status", "Menunggu", "Dikonfirmasi", "Duduk", "Selesai", "Dibatalkan"]
         )
-        f_lay.addWidget(self.filter_status)
+        f_lay.addWidget(self._make_filter_field(status_label, self.filter_status))
 
         apply_btn = QPushButton("Terapkan")
+        apply_btn.setObjectName("reportApplyButton")
+        apply_btn.setFixedWidth(108)
+        apply_btn.setFixedHeight(38)
         apply_btn.clicked.connect(self.refresh)
-        f_lay.addWidget(apply_btn)
+        f_lay.addWidget(apply_btn, 0, Qt.AlignBottom)
 
-        f_lay.addStretch()
+        f_lay.addStretch(1)
+
+        action_lay = QHBoxLayout()
+        action_lay.setSpacing(10)
+        action_lay.addStretch(1)
 
         export_btn = QPushButton("Export CSV")
         export_btn.setObjectName("primaryButton")
+        export_btn.setFixedHeight(38)
         export_btn.clicked.connect(self.export_csv)
-        f_lay.addWidget(export_btn)
+        action_lay.addWidget(export_btn)
 
         export_pdf_btn = QPushButton("Export PDF")
         export_pdf_btn.setObjectName("successButton")
+        export_pdf_btn.setFixedHeight(38)
         export_pdf_btn.clicked.connect(self.export_pdf)
-        f_lay.addWidget(export_pdf_btn)
+        action_lay.addWidget(export_pdf_btn)
 
+        self.filter_summary = QLabel()
+        self.filter_summary.setObjectName("reportFilterSummary")
+
+        filter_layout.addLayout(f_lay)
+        filter_layout.addLayout(action_lay)
+        filter_layout.addWidget(self.filter_summary)
         layout.addWidget(filter_grp)
 
         content = QHBoxLayout()
@@ -90,6 +130,16 @@ class LaporanPage(QWidget):
         content.addWidget(self.table, 3)
         content.addWidget(self.canvas, 2)
         layout.addLayout(content)
+
+    def _make_filter_field(self, label, field):
+        wrapper = QWidget()
+        wrapper.setObjectName("reportFilterField")
+        wrapper_layout = QVBoxLayout(wrapper)
+        wrapper_layout.setContentsMargins(0, 0, 0, 0)
+        wrapper_layout.setSpacing(5)
+        wrapper_layout.addWidget(label)
+        wrapper_layout.addWidget(field)
+        return wrapper
 
     def refresh(self):
         date_from = self.date_from.date().toString("yyyy-MM-dd")
@@ -122,6 +172,10 @@ class LaporanPage(QWidget):
                 self.table.setItem(row, col, QTableWidgetItem(val))
         self.table.setSortingEnabled(True)
 
+        self.filter_summary.setText(
+            f"Menampilkan {len(self.all_data)} data reservasi dari {date_from} sampai {date_to}"
+            + ("" if status_filter == "Semua Status" else f" dengan status {status_filter}")
+        )
         self._update_chart()
 
     def _update_chart(self):

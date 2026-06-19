@@ -11,7 +11,16 @@ class CardWidget(QFrame):
     def __init__(self, title, value, emoji="📌", color="#3498DB"):
         super().__init__()
         self.setObjectName("dashCard")
-        self.setStyleSheet(f"#dashCard {{ border-left: 4px solid {color}; }}")
+        self.setFrameShape(QFrame.NoFrame)
+        self.setStyleSheet(f"""
+            #dashCard {{
+                background: white;
+                border-radius: 14px;
+                border: 1.5px solid #DDE4EC;
+                border-left: 4px solid {color};
+                min-height: 86px;
+            }}
+        """)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 12, 18, 12)
 
