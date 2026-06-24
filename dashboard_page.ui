@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DashboardPageUi</class>
+ <widget class="QWidget" name="DashboardPageUi">
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing"><number>18</number></property>
+   <property name="leftMargin"><number>28</number></property>
+   <property name="topMargin"><number>24</number></property>
+   <property name="rightMargin"><number>28</number></property>
+   <property name="bottomMargin"><number>24</number></property>
+   <item><widget class="QLabel" name="header_label"><property name="objectName"><string>pageHeader</string></property></widget></item>
+   <item><widget class="QLabel" name="date_label"><property name="objectName"><string>dateLabel</string></property></widget></item>
+   <item>
+    <layout class="QHBoxLayout" name="cards_layout">
+     <property name="spacing"><number>16</number></property>
+     <item><widget class="QFrame" name="card_hari_ini"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout" name="card_hari_ini_layout"><property name="leftMargin"><number>18</number></property><property name="topMargin"><number>12</number></property><property name="rightMargin"><number>18</number></property><property name="bottomMargin"><number>12</number></property><item><widget class="QLabel" name="card_hari_ini_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_hari_ini_title"><property name="text"><string>Reservasi Hari Ini</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+     <item><widget class="QFrame" name="card_menunggu"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout" name="card_menunggu_layout"><property name="leftMargin"><number>18</number></property><property name="topMargin"><number>12</number></property><property name="rightMargin"><number>18</number></property><property name="bottomMargin"><number>12</number></property><item><widget class="QLabel" name="card_menunggu_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_menunggu_title"><property name="text"><string>Menunggu Konfirmasi</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+     <item><widget class="QFrame" name="card_selesai"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout" name="card_selesai_layout"><property name="leftMargin"><number>18</number></property><property name="topMargin"><number>12</number></property><property name="rightMargin"><number>18</number></property><property name="bottomMargin"><number>12</number></property><item><widget class="QLabel" name="card_selesai_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_selesai_title"><property name="text"><string>Selesai Hari Ini</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+     <item><widget class="QFrame" name="card_total"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout" name="card_total_layout"><property name="leftMargin"><number>18</number></property><property name="topMargin"><number>12</number></property><property name="rightMargin"><number>18</number></property><property name="bottomMargin"><number>12</number></property><item><widget class="QLabel" name="card_total_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_total_title"><property name="text"><string>Total Reservasi Aktif</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="bottom_layout">
+     <property name="spacing"><number>16</number></property>
+     <item>
+      <widget class="QWidget" name="table_wrap">
+       <layout class="QVBoxLayout" name="table_layout">
+        <property name="spacing"><number>8</number></property>
+        <property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property>
+        <item><widget class="QLabel" name="section_label"><property name="text"><string>Reservasi Hari Ini</string></property><property name="objectName"><string>sectionTitle</string></property></widget></item>
+        <item><widget class="QTableWidget" name="today_table"><property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property><property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property><attribute name="verticalHeaderVisible"><bool>false</bool></attribute></widget></item>
+       </layout>
+      </widget>
+     </item>
+     <item><widget class="QWidget" name="chart_container"><property name="minimumWidth"><number>280</number></property><layout class="QVBoxLayout" name="chart_layout"><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property></layout></widget></item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ManagerDashboardPageUi</class>
+ <widget class="QWidget" name="ManagerDashboardPageUi">
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing"><number>18</number></property>
+   <property name="leftMargin"><number>28</number></property>
+   <property name="topMargin"><number>24</number></property>
+   <property name="rightMargin"><number>28</number></property>
+   <property name="bottomMargin"><number>24</number></property>
+   <item><widget class="QLabel" name="header_label"><property name="objectName"><string>pageHeader</string></property></widget></item>
+   <item><widget class="QLabel" name="date_label"><property name="objectName"><string>dateLabel</string></property></widget></item>
+   <item>
+    <widget class="QGroupBox" name="reservasi_group">
+     <property name="title"><string>Statistik Reservasi</string></property>
+     <layout class="QHBoxLayout" name="reservasi_layout">
+      <property name="spacing"><number>12</number></property>
+      <item><widget class="QFrame" name="card_total"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_total_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_total_title"><property name="text"><string>Total Reservasi</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+      <item><widget class="QFrame" name="card_hari_ini"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_hari_ini_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_hari_ini_title"><property name="text"><string>Reservasi Hari Ini</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+      <item><widget class="QFrame" name="card_menunggu"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_menunggu_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_menunggu_title"><property name="text"><string>Menunggu Konfirmasi</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+      <item><widget class="QFrame" name="card_dibatalkan"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_dibatalkan_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_dibatalkan_title"><property name="text"><string>Dibatalkan Bulan Ini</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="info_layout">
+     <property name="spacing"><number>16</number></property>
+     <item>
+      <widget class="QGroupBox" name="meja_group">
+       <property name="title"><string>Statistik Meja</string></property>
+       <layout class="QHBoxLayout" name="meja_layout">
+        <property name="spacing"><number>12</number></property>
+        <item><widget class="QFrame" name="card_meja_tersedia"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_meja_tersedia_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_meja_tersedia_title"><property name="text"><string>Meja Tersedia</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+        <item><widget class="QFrame" name="card_meja_terisi"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_meja_terisi_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_meja_terisi_title"><property name="text"><string>Meja Terisi</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+        <item><widget class="QFrame" name="card_meja_maintenance"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_meja_maintenance_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_meja_maintenance_title"><property name="text"><string>Maintenance</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="pegawai_group">
+       <property name="title"><string>Statistik Pegawai</string></property>
+       <layout class="QHBoxLayout" name="pegawai_layout">
+        <property name="spacing"><number>12</number></property>
+        <item><widget class="QFrame" name="card_total_pegawai"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_total_pegawai_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_total_pegawai_title"><property name="text"><string>Total Pegawai</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+        <item><widget class="QFrame" name="card_manajer"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_manajer_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_manajer_title"><property name="text"><string>Manajer</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+        <item><widget class="QFrame" name="card_staf"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_staf_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_staf_title"><property name="text"><string>Staf</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="ai_group">
+     <property name="title"><string>AI Prediksi Jam Ramai</string></property>
+     <layout class="QHBoxLayout" name="ai_layout">
+      <property name="spacing"><number>12</number></property>
+      <item><widget class="QFrame" name="card_ai_jam"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_ai_jam_value"><property name="text"><string>-</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_ai_jam_title"><property name="text"><string>Jam Ramai Hari Ini</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+      <item><widget class="QFrame" name="card_ai_tamu"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_ai_tamu_value"><property name="text"><string>0</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_ai_tamu_title"><property name="text"><string>Estimasi Tamu</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+      <item><widget class="QFrame" name="card_ai_staf"><property name="objectName"><string>dashCard</string></property><layout class="QVBoxLayout"><item><widget class="QLabel" name="card_ai_staf_value"><property name="text"><string>-</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardValue</string></property></widget></item><item><widget class="QLabel" name="card_ai_staf_title"><property name="text"><string>Saran Staf</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="objectName"><string>cardTitle</string></property></widget></item></layout></widget></item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="bottom_layout">
+     <property name="spacing"><number>16</number></property>
+     <item><widget class="QGroupBox" name="today_group"><property name="title"><string>Reservasi Hari Ini</string></property><layout class="QVBoxLayout" name="today_layout"><item><widget class="QTableWidget" name="today_table"><property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property><property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property><attribute name="verticalHeaderVisible"><bool>false</bool></attribute></widget></item></layout></widget></item>
+     <item><widget class="QWidget" name="chart_container"><property name="minimumWidth"><number>280</number></property><layout class="QVBoxLayout" name="chart_layout"><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property></layout></widget></item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

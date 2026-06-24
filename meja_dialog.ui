@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MejaDialog</class>
+ <widget class="QDialog" name="MejaDialog">
+  <property name="windowTitle">
+   <string>Meja</string>
+  </property>
+  <property name="minimumWidth">
+   <number>430</number>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>14</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="form_group">
+     <property name="title">
+      <string>Data Meja</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="verticalSpacing">
+       <number>12</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="nomor_label">
+        <property name="text">
+         <string>Nomor Meja *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="nomor_input">
+        <property name="maxLength">
+         <number>10</number>
+        </property>
+        <property name="placeholderText">
+         <string>Contoh: M25</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="kapasitas_label">
+        <property name="text">
+         <string>Kapasitas *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="kapasitas_input">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lantai_label">
+        <property name="text">
+         <string>Lantai *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="lantai_input">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>20</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="jenis_label">
+        <property name="text">
+         <string>Jenis *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="jenis_combo"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="status_label">
+        <property name="text">
+         <string>Status *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="status_combo"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="buttonSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancel_btn">
+       <property name="text">
+        <string>Batal</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+     <widget class="QPushButton" name="save_btn">
+       <property name="text">
+        <string>Simpan Meja</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

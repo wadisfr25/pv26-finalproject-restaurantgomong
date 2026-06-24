@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainDashboardUi</class>
+ <widget class="QWidget" name="MainDashboardUi">
+  <layout class="QHBoxLayout" name="root_layout">
+   <property name="spacing"><number>0</number></property>
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <item>
+    <widget class="QFrame" name="sidebar">
+     <property name="minimumWidth"><number>230</number></property>
+     <property name="maximumWidth"><number>230</number></property>
+     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+     <layout class="QVBoxLayout" name="sidebar_layout">
+      <property name="spacing"><number>0</number></property>
+      <property name="leftMargin"><number>0</number></property>
+      <property name="topMargin"><number>0</number></property>
+      <property name="rightMargin"><number>0</number></property>
+      <property name="bottomMargin"><number>0</number></property>
+      <item>
+       <widget class="QWidget" name="sidebarHeader">
+        <layout class="QVBoxLayout" name="header_layout">
+         <property name="leftMargin"><number>15</number></property>
+         <property name="topMargin"><number>25</number></property>
+         <property name="rightMargin"><number>15</number></property>
+         <property name="bottomMargin"><number>20</number></property>
+         <item>
+          <widget class="QLabel" name="sidebar_title">
+           <property name="text"><string>Gomong</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+           <property name="objectName"><string>sidebarTitle</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="sidebar_subtitle">
+           <property name="text"><string>Restaurant &amp; Reservasi</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+           <property name="objectName"><string>sidebarSubtitle</string></property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="nav_container">
+        <layout class="QVBoxLayout" name="nav_layout">
+         <property name="spacing"><number>0</number></property>
+         <property name="leftMargin"><number>0</number></property>
+         <property name="topMargin"><number>0</number></property>
+         <property name="rightMargin"><number>0</number></property>
+         <property name="bottomMargin"><number>0</number></property>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="sidebar_spacer">
+        <property name="orientation"><enum>Qt::Vertical</enum></property>
+        <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="role_badge">
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+        <property name="objectName"><string>sidebarRole</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="sidebarFooter">
+        <layout class="QVBoxLayout" name="footer_layout">
+         <property name="spacing"><number>8</number></property>
+         <property name="leftMargin"><number>15</number></property>
+         <property name="topMargin"><number>15</number></property>
+         <property name="rightMargin"><number>15</number></property>
+         <property name="bottomMargin"><number>15</number></property>
+         <item>
+          <widget class="QLabel" name="user_label">
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+           <property name="wordWrap"><bool>true</bool></property>
+           <property name="objectName"><string>sidebarUser</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="logout_btn">
+           <property name="text"><string>Logout</string></property>
+           <property name="objectName"><string>logoutButton</string></property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="content_stack"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

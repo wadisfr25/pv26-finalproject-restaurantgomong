@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MejaPageUi</class>
+ <widget class="QWidget" name="MejaPageUi">
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing"><number>14</number></property>
+   <property name="leftMargin"><number>25</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>25</number></property>
+   <property name="bottomMargin"><number>20</number></property>
+   <item>
+    <layout class="QHBoxLayout" name="header_layout">
+     <item>
+      <layout class="QVBoxLayout" name="title_layout">
+       <property name="spacing"><number>3</number></property>
+       <item><widget class="QLabel" name="title_label"><property name="text"><string>Manajemen Meja</string></property><property name="objectName"><string>pageHeader</string></property></widget></item>
+       <item><widget class="QLabel" name="subtitle_label"><property name="text"><string>Atur ketersediaan, kapasitas, dan status meja restoran.</string></property><property name="objectName"><string>pageSubtitle</string></property></widget></item>
+      </layout>
+     </item>
+     <item><spacer name="header_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+     <item><widget class="QPushButton" name="add_btn"><property name="text"><string>+  Tambah Meja</string></property><property name="minimumHeight"><number>38</number></property><property name="maximumHeight"><number>38</number></property><property name="objectName"><string>primaryButton</string></property></widget></item>
+     <item><widget class="QPushButton" name="refresh_btn"><property name="text"><string>Refresh</string></property><property name="minimumHeight"><number>38</number></property><property name="maximumHeight"><number>38</number></property><property name="objectName"><string>secondaryButton</string></property></widget></item>
+    </layout>
+   </item>
+   <item><widget class="QLabel" name="info_label"><property name="text"><string>Status meja otomatis mengikuti reservasi aktif. Klik kartu meja untuk edit, hapus, atau ubah status maintenance.</string></property><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>infoBanner</string></property></widget></item>
+   <item>
+    <widget class="QFrame" name="mejaToolbar">
+     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+     <layout class="QVBoxLayout" name="toolbar_layout">
+      <property name="spacing"><number>10</number></property>
+      <property name="leftMargin"><number>14</number></property>
+      <property name="topMargin"><number>12</number></property>
+      <property name="rightMargin"><number>14</number></property>
+      <property name="bottomMargin"><number>12</number></property>
+      <item>
+       <layout class="QHBoxLayout" name="filter_layout">
+        <property name="spacing"><number>10</number></property>
+        <item><widget class="QLineEdit" name="search_input"><property name="placeholderText"><string>Cari nomor meja atau jenis...</string></property></widget></item>
+        <item><widget class="QComboBox" name="filter_status"/></item>
+        <item><widget class="QComboBox" name="filter_kapasitas"/></item>
+        <item><widget class="QComboBox" name="sort_combo"/></item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="legend_layout">
+        <property name="spacing"><number>8</number></property>
+        <item><widget class="QLabel" name="legend_tersedia"><property name="text"><string>Tersedia</string></property><property name="styleSheet"><string>color: #1E8449; font-weight: bold; font-size: 12px;</string></property></widget></item>
+        <item><widget class="QLabel" name="legend_terisi"><property name="text"><string>Terisi</string></property><property name="styleSheet"><string>color: #C0392B; font-weight: bold; font-size: 12px;</string></property></widget></item>
+        <item><widget class="QLabel" name="legend_dibereskan"><property name="text"><string>Dibereskan</string></property><property name="styleSheet"><string>color: #2874A6; font-weight: bold; font-size: 12px;</string></property></widget></item>
+        <item><widget class="QLabel" name="legend_maintenance"><property name="text"><string>Maintenance</string></property><property name="styleSheet"><string>color: #B9770E; font-weight: bold; font-size: 12px;</string></property></widget></item>
+        <item><spacer name="legend_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+        <item><widget class="QLabel" name="summary_lbl"><property name="objectName"><string>mejaSummary</string></property></widget></item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scroll_area">
+     <property name="widgetResizable"><bool>true</bool></property>
+     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+     <widget class="QWidget" name="floor_container">
+      <layout class="QVBoxLayout" name="floor_layout">
+       <property name="spacing"><number>16</number></property>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PegawaiDialog</class>
+ <widget class="QDialog" name="PegawaiDialog">
+  <property name="windowTitle">
+   <string>Pegawai</string>
+  </property>
+  <property name="minimumWidth">
+   <number>480</number>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>15</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="info_grp">
+     <property name="title">
+      <string>Informasi Pegawai</string>
+     </property>
+     <layout class="QFormLayout" name="info_lay">
+      <property name="verticalSpacing">
+       <number>12</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="nama_label">
+        <property name="text">
+         <string>Nama *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="nama_input">
+        <property name="maxLength">
+         <number>100</number>
+        </property>
+        <property name="placeholderText">
+         <string>Nama lengkap pegawai</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="username_label">
+        <property name="text">
+         <string>Username *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="username_input">
+        <property name="maxLength">
+         <number>50</number>
+        </property>
+        <property name="placeholderText">
+         <string>Username untuk login</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="jabatan_label">
+        <property name="text">
+         <string>Jabatan *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="jabatan_combo"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pwd_grp">
+     <property name="title">
+      <string>Password</string>
+     </property>
+     <layout class="QFormLayout" name="pwd_lay">
+      <property name="verticalSpacing">
+       <number>12</number>
+      </property>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="reset_pwd_check">
+        <property name="text">
+         <string>Reset / Ubah Password</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="password_label">
+        <property name="text">
+         <string>Password *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="password_input">
+        <property name="maxLength">
+         <number>100</number>
+        </property>
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+        <property name="placeholderText">
+         <string>Password baru</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="konfirmasi_label">
+        <property name="text">
+         <string>Konfirmasi *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="konfirmasi_input">
+        <property name="maxLength">
+         <number>100</number>
+        </property>
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+        <property name="placeholderText">
+         <string>Ulangi password</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="buttonSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancel_btn">
+       <property name="text">
+        <string>Batal</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+     <widget class="QPushButton" name="save_btn">
+       <property name="text">
+        <string>Simpan</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

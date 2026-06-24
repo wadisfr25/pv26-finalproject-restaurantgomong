@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LaporanPageUi</class>
+ <widget class="QWidget" name="LaporanPageUi">
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing"><number>18</number></property>
+   <property name="leftMargin"><number>28</number></property>
+   <property name="topMargin"><number>24</number></property>
+   <property name="rightMargin"><number>28</number></property>
+   <property name="bottomMargin"><number>24</number></property>
+   <item><widget class="QLabel" name="title_label"><property name="text"><string>Laporan &amp; Statistik</string></property><property name="objectName"><string>pageHeader</string></property></widget></item>
+   <item>
+    <widget class="QGroupBox" name="filter_group">
+     <property name="title"><string>Filter Data</string></property>
+     <property name="objectName"><string>reportFilterGroup</string></property>
+     <layout class="QVBoxLayout" name="filter_group_layout">
+      <property name="spacing"><number>14</number></property>
+      <property name="leftMargin"><number>18</number></property>
+      <property name="topMargin"><number>22</number></property>
+      <property name="rightMargin"><number>18</number></property>
+      <property name="bottomMargin"><number>16</number></property>
+      <item>
+       <layout class="QHBoxLayout" name="filter_layout">
+        <property name="spacing"><number>14</number></property>
+        <item><widget class="QWidget" name="from_field"><property name="objectName"><string>reportFilterField</string></property><layout class="QVBoxLayout" name="from_layout"><property name="spacing"><number>6</number></property><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property><item><widget class="QLabel" name="date_from_label"><property name="text"><string>Dari Tanggal</string></property><property name="objectName"><string>reportFilterLabel</string></property></widget></item><item><widget class="QDateEdit" name="date_from"><property name="calendarPopup"><bool>true</bool></property><property name="displayFormat"><string>dd MMM yyyy</string></property><property name="buttonSymbols"><enum>QAbstractSpinBox::UpDownArrows</enum></property><property name="keyboardTracking"><bool>false</bool></property><property name="minimumWidth"><number>156</number></property><property name="minimumHeight"><number>40</number></property><property name="objectName"><string>reportDateInput</string></property></widget></item></layout></widget></item>
+        <item><widget class="QWidget" name="to_field"><property name="objectName"><string>reportFilterField</string></property><layout class="QVBoxLayout" name="to_layout"><property name="spacing"><number>6</number></property><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property><item><widget class="QLabel" name="date_to_label"><property name="text"><string>Sampai Tanggal</string></property><property name="objectName"><string>reportFilterLabel</string></property></widget></item><item><widget class="QDateEdit" name="date_to"><property name="calendarPopup"><bool>true</bool></property><property name="displayFormat"><string>dd MMM yyyy</string></property><property name="buttonSymbols"><enum>QAbstractSpinBox::UpDownArrows</enum></property><property name="keyboardTracking"><bool>false</bool></property><property name="minimumWidth"><number>156</number></property><property name="minimumHeight"><number>40</number></property><property name="objectName"><string>reportDateInput</string></property></widget></item></layout></widget></item>
+        <item><widget class="QWidget" name="status_field"><property name="objectName"><string>reportFilterField</string></property><layout class="QVBoxLayout" name="status_layout"><property name="spacing"><number>6</number></property><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property><item><widget class="QLabel" name="status_label"><property name="text"><string>Status Reservasi</string></property><property name="objectName"><string>reportFilterLabel</string></property></widget></item><item><widget class="QComboBox" name="filter_status"><property name="minimumWidth"><number>176</number></property><property name="minimumHeight"><number>40</number></property><property name="objectName"><string>reportStatusFilter</string></property></widget></item></layout></widget></item>
+        <item>
+         <widget class="QWidget" name="apply_field">
+          <property name="objectName"><string>reportFilterField</string></property>
+          <layout class="QVBoxLayout" name="apply_layout">
+           <property name="spacing"><number>6</number></property>
+           <property name="leftMargin"><number>0</number></property>
+           <property name="topMargin"><number>0</number></property>
+           <property name="rightMargin"><number>0</number></property>
+           <property name="bottomMargin"><number>0</number></property>
+           <item>
+            <widget class="QLabel" name="apply_spacer_label">
+             <property name="text"><string> </string></property>
+             <property name="objectName"><string>reportFilterLabel</string></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="apply_btn">
+             <property name="text"><string>Terapkan</string></property>
+             <property name="minimumHeight"><number>40</number></property>
+             <property name="minimumWidth"><number>116</number></property>
+             <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+             <property name="objectName"><string>reportApplyButton</string></property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item><spacer name="filter_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="filter_footer_layout">
+        <property name="spacing"><number>12</number></property>
+        <property name="topMargin"><number>2</number></property>
+        <item>
+         <widget class="QLabel" name="filter_summary">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="objectName"><string>reportFilterSummary</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="export_field">
+          <property name="objectName"><string>reportExportBar</string></property>
+          <layout class="QHBoxLayout" name="export_layout">
+           <property name="spacing"><number>8</number></property>
+           <property name="leftMargin"><number>10</number></property>
+           <property name="topMargin"><number>8</number></property>
+           <property name="rightMargin"><number>10</number></property>
+           <property name="bottomMargin"><number>8</number></property>
+           <item><widget class="QLabel" name="export_label"><property name="text"><string>Export data:</string></property><property name="objectName"><string>reportExportLabel</string></property></widget></item>
+           <item><widget class="QPushButton" name="export_btn"><property name="text"><string>Export CSV</string></property><property name="minimumHeight"><number>34</number></property><property name="minimumWidth"><number>104</number></property><property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property><property name="objectName"><string>primaryButton</string></property></widget></item>
+           <item><widget class="QPushButton" name="export_pdf_btn"><property name="text"><string>Export PDF</string></property><property name="minimumHeight"><number>34</number></property><property name="minimumWidth"><number>104</number></property><property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property><property name="objectName"><string>successButton</string></property></widget></item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item><widget class="QGroupBox" name="ai_group"><property name="title"><string>Analisis AI</string></property><layout class="QVBoxLayout" name="ai_layout"><property name="leftMargin"><number>18</number></property><property name="topMargin"><number>14</number></property><property name="rightMargin"><number>18</number></property><property name="bottomMargin"><number>14</number></property><item><widget class="QLabel" name="ai_summary"><property name="wordWrap"><bool>true</bool></property><property name="objectName"><string>reportFilterSummary</string></property></widget></item></layout></widget></item>
+   <item>
+    <layout class="QHBoxLayout" name="content_layout">
+     <property name="spacing"><number>16</number></property>
+     <item><widget class="QTableWidget" name="table"><property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property><property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property><property name="sortingEnabled"><bool>true</bool></property><attribute name="verticalHeaderVisible"><bool>false</bool></attribute></widget></item>
+     <item><widget class="QWidget" name="chart_container"><property name="minimumWidth"><number>320</number></property><layout class="QVBoxLayout" name="chart_layout"><property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property></layout></widget></item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

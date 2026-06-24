@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoginFormUi</class>
+ <widget class="QWidget" name="LoginFormUi">
+  <property name="objectName">
+   <string>loginPage</string>
+  </property>
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="leftMargin"><number>24</number></property>
+   <property name="topMargin"><number>24</number></property>
+   <property name="rightMargin"><number>24</number></property>
+   <property name="bottomMargin"><number>24</number></property>
+   <item alignment="Qt::AlignCenter">
+    <widget class="QWidget" name="loginContainer">
+     <property name="minimumWidth"><number>500</number></property>
+     <property name="maximumWidth"><number>500</number></property>
+     <layout class="QVBoxLayout" name="container_layout">
+      <property name="spacing"><number>13</number></property>
+      <property name="leftMargin"><number>50</number></property>
+      <property name="topMargin"><number>44</number></property>
+      <property name="rightMargin"><number>50</number></property>
+      <property name="bottomMargin"><number>44</number></property>
+      <item>
+       <widget class="QLabel" name="badge_label">
+        <property name="text"><string>ADMIN ACCESS</string></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+        <property name="objectName"><string>loginBadge</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="heading_label">
+        <property name="text"><string>Restaurant Gomong</string></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+        <property name="objectName"><string>loginHeading</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="subheading_label">
+        <property name="text"><string>Dashboard Reservasi &amp; Manajemen Restoran</string></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+        <property name="objectName"><string>loginSubHeading</string></property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="top_spacer">
+        <property name="orientation"><enum>Qt::Vertical</enum></property>
+        <property name="sizeHint" stdset="0"><size><width>20</width><height>18</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="username_label">
+        <property name="text"><string>Username</string></property>
+        <property name="objectName"><string>formTitle</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="username_input">
+        <property name="placeholderText"><string>Masukkan username</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="password_label">
+        <property name="text"><string>Password</string></property>
+        <property name="objectName"><string>formTitle</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="password_input">
+        <property name="echoMode"><enum>QLineEdit::Password</enum></property>
+        <property name="placeholderText"><string>Masukkan password</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="remember_me">
+        <property name="text"><string>Ingat Saya</string></property>
+        <property name="objectName"><string>checkBox</string></property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="button_spacer">
+        <property name="orientation"><enum>Qt::Vertical</enum></property>
+        <property name="sizeHint" stdset="0"><size><width>20</width><height>15</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="login_btn">
+        <property name="text"><string>Masuk Admin</string></property>
+        <property name="minimumHeight"><number>42</number></property>
+        <property name="maximumHeight"><number>42</number></property>
+        <property name="objectName"><string>primaryButton</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="hint_label">
+        <property name="text"><string>Demo: admin / admin123</string></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+        <property name="objectName"><string>loginHint</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

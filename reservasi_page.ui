@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReservasiPageUi</class>
+ <widget class="QWidget" name="ReservasiPageUi">
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing"><number>12</number></property>
+   <property name="leftMargin"><number>25</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>25</number></property>
+   <property name="bottomMargin"><number>20</number></property>
+   <item>
+    <layout class="QHBoxLayout" name="header_layout">
+     <item>
+      <widget class="QLabel" name="title_label">
+       <property name="text"><string>Manajemen Reservasi</string></property>
+       <property name="objectName"><string>pageHeader</string></property>
+      </widget>
+     </item>
+     <item><spacer name="header_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+     <item>
+      <widget class="QPushButton" name="add_btn">
+       <property name="text"><string>+  Tambah Reservasi</string></property>
+       <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+       <property name="objectName"><string>primaryButton</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="filter_layout">
+     <item>
+      <widget class="QLineEdit" name="search_input">
+       <property name="placeholderText"><string>Cari nama tamu atau nomor telepon...</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="filter_status"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="table">
+     <property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property>
+     <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+     <property name="sortingEnabled"><bool>true</bool></property>
+     <attribute name="verticalHeaderVisible"><bool>false</bool></attribute>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="action_layout">
+     <item><widget class="QPushButton" name="edit_btn"><property name="text"><string>Edit</string></property></widget></item>
+     <item><widget class="QPushButton" name="konfirmasi_btn"><property name="text"><string>Konfirmasi</string></property><property name="objectName"><string>successButton</string></property></widget></item>
+     <item><widget class="QPushButton" name="selesai_btn"><property name="text"><string>Tandai Selesai</string></property></widget></item>
+     <item><spacer name="action_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+     <item><widget class="QPushButton" name="hapus_btn"><property name="text"><string>Hapus Terpilih</string></property><property name="objectName"><string>dangerButton</string></property></widget></item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
