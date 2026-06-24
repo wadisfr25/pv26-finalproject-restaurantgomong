@@ -1,6 +1,7 @@
 import sqlite3
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
+from ai.reservation_ai import prediksi_jam_ramai, rekomendasi_meja
 
 DB_NAME = "restaurant_gomong.db"
 
@@ -85,6 +86,34 @@ def init_pegawai():
             "INSERT INTO pegawai (nama, username, password, jabatan) VALUES (?,?,?,?)", data
         )
         conn.commit()
+
+    meja_tambahan = [
+        ('M25', 2, 1, 'Outdoor'),
+        ('M26', 2, 1, 'Outdoor'),
+        ('M27', 4, 1, 'Outdoor'),
+        ('M28', 4, 1, 'Outdoor'),
+        ('M29', 4, 2, 'Window Seat'),
+        ('M30', 4, 2, 'Window Seat'),
+        ('M31', 6, 2, 'Besar'),
+        ('M32', 6, 2, 'Besar'),
+        ('M33', 6, 2, 'VIP'),
+        ('M34', 6, 2, 'VIP'),
+        ('M35', 8, 2, 'VIP'),
+        ('M36', 8, 2, 'VIP'),
+        ('M37', 10, 2, 'Family'),
+        ('M38', 10, 2, 'Family'),
+        ('M39', 12, 2, 'Private Room'),
+        ('M40', 12, 2, 'Private Room'),
+    ]
+    cursor.executemany(
+        """
+        INSERT OR IGNORE INTO meja
+            (nomor_meja, kapasitas, lantai, jenis, status)
+        VALUES (?,?,?,?,?)
+        """,
+        [(m[0], m[1], m[2], m[3], 'Tersedia') for m in meja_tambahan]
+    )
+    conn.commit()
     conn.close()
 
 
@@ -133,10 +162,58 @@ def init_meja():
 
 # ── MEJA STATUS AUTO-SYNC ────────────────────────────────────────────────────
 
-STATUS_AKTIF = ('Menunggu', 'Dikonfirmasi', 'Duduk')
+STATUS_AKTIF = ('Menunggu', 'Dikonfirmasi')
 
 def _active_status_placeholders():
     return ','.join('?' * len(STATUS_AKTIF))
+
+
+def _hapus_status_reservasi_lama(conn):
+    old_status = "Du" + "duk"
+    meja_ids = [
+        row['meja_id'] for row in conn.execute(
+            """
+            SELECT DISTINCT meja_id
+            FROM reservasi
+            WHERE status = ?
+              AND meja_id IS NOT NULL
+            """,
+            (old_status,)
+        ).fetchall()
+    ]
+    conn.execute(
+        "UPDATE reservasi SET status = 'Dikonfirmasi' WHERE status = ?",
+        (old_status,)
+    )
+    for meja_id in meja_ids:
+        sync_status_meja(conn, meja_id)
+
+
+def _set_meja_dibereskan_jika_tidak_aktif(conn, meja_id):
+    if not meja_id:
+        return
+
+    current = conn.execute(
+        "SELECT status FROM meja WHERE id = ?", (meja_id,)
+    ).fetchone()
+    if not current or current['status'] == 'Maintenance':
+        return
+
+    ada_aktif = conn.execute(
+        f"""
+        SELECT COUNT(*)
+        FROM reservasi
+        WHERE meja_id = ?
+          AND status IN ({_active_status_placeholders()})
+        """,
+        (meja_id, *STATUS_AKTIF)
+    ).fetchone()[0]
+
+    if ada_aktif == 0:
+        conn.execute(
+            "UPDATE meja SET status = 'Dibereskan' WHERE id = ?",
+            (meja_id,)
+        )
 
 
 def _get_konflik_reservasi(conn, meja_id, tanggal, waktu, exclude_reservasi_id=None):
@@ -191,11 +268,62 @@ def sync_status_meja(conn, meja_id):
         (meja_id, *STATUS_AKTIF)
     ).fetchone()[0]
 
-    new_status = 'Terisi' if ada_aktif > 0 else 'Tersedia'
+    if ada_aktif > 0:
+        new_status = 'Terisi'
+    elif current['status'] == 'Dibereskan':
+        new_status = 'Dibereskan'
+    else:
+        new_status = 'Tersedia'
     conn.execute("UPDATE meja SET status = ? WHERE id = ?", (new_status, meja_id))
 
 
 # ── PEGAWAI ──────────────────────────────────────────────────────────────────
+
+def auto_update_reservasi_lewat_waktu():
+    """
+    Menunggu yang sudah lewat waktu reservasi -> Dibatalkan.
+    Dikonfirmasi yang sudah lewat waktu reservasi -> Selesai, lalu meja Dibereskan.
+    """
+    conn = get_db_connection()
+    try:
+        _hapus_status_reservasi_lama(conn)
+        now_text = datetime.now().strftime("%Y-%m-%d %H:%M")
+        rows = conn.execute("""
+            SELECT id, meja_id, status
+            FROM reservasi
+            WHERE status IN ('Menunggu', 'Dikonfirmasi')
+              AND (tanggal || ' ' || waktu) < ?
+            ORDER BY tanggal, waktu, id
+        """, (now_text,)).fetchall()
+
+        affected_meja = set()
+        selesai_meja = set()
+        for row in rows:
+            new_status = 'Dibatalkan' if row['status'] == 'Menunggu' else 'Selesai'
+            conn.execute(
+                "UPDATE reservasi SET status = ? WHERE id = ?",
+                (new_status, row['id'])
+            )
+            if row['meja_id']:
+                affected_meja.add(row['meja_id'])
+                if new_status == 'Selesai':
+                    selesai_meja.add(row['meja_id'])
+
+        for meja_id in affected_meja:
+            sync_status_meja(conn, meja_id)
+
+        for meja_id in selesai_meja:
+            _set_meja_dibereskan_jika_tidak_aktif(conn, meja_id)
+
+        if rows or conn.total_changes:
+            conn.commit()
+        return len(rows)
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
 
 def get_all_pegawai():
     conn = get_db_connection()
@@ -292,6 +420,7 @@ def get_jabatan_by_username(username):
 
 def get_available_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None):
     """Cari meja tersedia sesuai jumlah tamu & waktu reservasi."""
+    auto_update_reservasi_lewat_waktu()
     conn = get_db_connection()
 
     exclude_clause = "AND r.id != ?" if exclude_reservasi_id else ""
@@ -302,7 +431,7 @@ def get_available_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None)
     query = f"""
         SELECT m.* FROM meja m
         WHERE m.kapasitas >= ?
-          AND m.status != 'Maintenance'
+          AND m.status NOT IN ('Maintenance', 'Dibereskan')
           AND m.id NOT IN (
               SELECT r.meja_id FROM reservasi r
               WHERE r.tanggal = ? AND r.waktu = ?
@@ -317,12 +446,59 @@ def get_available_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None)
     return tables
 
 
+def get_recommended_tables(jumlah_tamu, tanggal, waktu, exclude_reservasi_id=None):
+    """Ranking meja tersedia dari modul AI reservasi."""
+    auto_update_reservasi_lewat_waktu()
+    conn = get_db_connection()
+    try:
+        return rekomendasi_meja(
+            conn, jumlah_tamu, tanggal, waktu, exclude_reservasi_id, STATUS_AKTIF
+        )
+    finally:
+        conn.close()
+
+
+def get_prediksi_jam_ramai(tanggal=None):
+    """Prediksi jam ramai dari modul AI reservasi."""
+    auto_update_reservasi_lewat_waktu()
+    conn = get_db_connection()
+    try:
+        return prediksi_jam_ramai(conn, tanggal)
+    finally:
+        conn.close()
+
+
+def _get_next_reservasi_id(conn):
+    """Ambil ID reservasi kosong paling kecil agar nomor bisa dipakai ulang."""
+    row = conn.execute("""
+        WITH RECURSIVE candidates(id) AS (
+            SELECT 1
+            UNION ALL
+            SELECT id + 1
+            FROM candidates
+            WHERE id < (SELECT COALESCE(MAX(id), 0) + 1 FROM reservasi)
+        )
+        SELECT id
+        FROM candidates
+        WHERE id NOT IN (SELECT id FROM reservasi)
+          AND id NOT IN (
+              SELECT reservasi_id
+              FROM transaksi
+              WHERE reservasi_id IS NOT NULL
+          )
+        ORDER BY id
+        LIMIT 1
+    """).fetchone()
+    return row["id"] if row else 1
+
+
 def simpan_reservasi(nama, telepon, jumlah, tanggal, waktu, meja_id, status, catatan,
                      reservasi_id=None):
     """
     Tambah atau edit reservasi, lalu sync status meja secara otomatis.
     Returns (True, None) atau (False, pesan_error).
     """
+    auto_update_reservasi_lewat_waktu()
     conn = get_db_connection()
     try:
         if meja_id and status in STATUS_AKTIF:
@@ -350,16 +526,19 @@ def simpan_reservasi(nama, telepon, jumlah, tanggal, waktu, meja_id, status, cat
             if old_meja_id and old_meja_id != meja_id:
                 sync_status_meja(conn, old_meja_id)
         else:
+            next_id = _get_next_reservasi_id(conn)
             conn.execute("""
                 INSERT INTO reservasi
-                    (nama_tamu, no_telepon, jumlah_tamu, tanggal, waktu,
+                    (id, nama_tamu, no_telepon, jumlah_tamu, tanggal, waktu,
                      meja_id, lantai, status, catatan, created_at)
-                VALUES (?,?,?,?,?,?,1,?,?,?)
-            """, (nama, telepon, jumlah, tanggal, waktu, meja_id, status, catatan,
+                VALUES (?,?,?,?,?,?,?,1,?,?,?)
+            """, (next_id, nama, telepon, jumlah, tanggal, waktu, meja_id, status, catatan,
                   datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
         # Sync meja baru/saat-ini
         sync_status_meja(conn, meja_id)
+        if status == 'Selesai' and meja_id:
+            _set_meja_dibereskan_jika_tidak_aktif(conn, meja_id)
         conn.commit()
         return True, None
     except Exception as e:
@@ -379,6 +558,7 @@ def hapus_banyak_reservasi(id_list):
             ).fetchall() if row['meja_id']
         ]
 
+        conn.execute(f"DELETE FROM transaksi WHERE reservasi_id IN ({placeholders})", id_list)
         conn.execute(f"DELETE FROM reservasi WHERE id IN ({placeholders})", id_list)
 
         # Sync semua meja yang terdampak
@@ -395,6 +575,7 @@ def hapus_banyak_reservasi(id_list):
 
 def update_status_reservasi(reservasi_id, new_status):
     """Update status reservasi dan sync meja otomatis."""
+    auto_update_reservasi_lewat_waktu()
     conn = get_db_connection()
     try:
         row = conn.execute(
@@ -413,6 +594,8 @@ def update_status_reservasi(reservasi_id, new_status):
             "UPDATE reservasi SET status = ? WHERE id = ?", (new_status, reservasi_id)
         )
         sync_status_meja(conn, meja_id)
+        if new_status == 'Selesai' and meja_id:
+            _set_meja_dibereskan_jika_tidak_aktif(conn, meja_id)
         conn.commit()
         return True, None
     except Exception as e:
@@ -422,6 +605,7 @@ def update_status_reservasi(reservasi_id, new_status):
 
 
 def get_all_meja():
+    auto_update_reservasi_lewat_waktu()
     conn = get_db_connection()
     rows = conn.execute(
         "SELECT id, nomor_meja, kapasitas, lantai, jenis, status FROM meja ORDER BY kapasitas, nomor_meja"
@@ -489,7 +673,120 @@ def hapus_meja(meja_id):
         conn.close()
 
 
+def init_dummy_laporan():
+    """Tambah data dummy reservasi agar dashboard, laporan, dan AI punya data historis."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    marker = "Dummy laporan AI"
+
+    existing_dummy = cursor.execute(
+        "SELECT COUNT(*) FROM reservasi WHERE catatan LIKE ?",
+        (f"{marker}%",)
+    ).fetchone()[0]
+    if existing_dummy >= 90:
+        conn.close()
+        return
+
+    meja_rows = cursor.execute("""
+        SELECT id, kapasitas
+        FROM meja
+        WHERE status != 'Maintenance'
+        ORDER BY kapasitas ASC, nomor_meja ASC
+    """).fetchall()
+    if not meja_rows:
+        conn.close()
+        return
+
+    nama_tamu = [
+        "Andi Pratama", "Siti Rahma", "Budi Santoso", "Dewi Lestari",
+        "Rizky Maulana", "Nabila Putri", "Agus Wijaya", "Maya Anggraini",
+        "Fajar Nugroho", "Intan Permata", "Hendra Saputra", "Citra Ananda",
+        "Yoga Firmansyah", "Aulia Safitri", "Rani Maharani", "Dimas Arya",
+        "Vina Oktavia", "Bayu Ramadhan", "Tasya Kirana", "Ilham Akbar",
+    ]
+    jam_lunch = ["11:00", "11:30", "12:00", "12:30", "13:00"]
+    jam_dinner = ["17:30", "18:00", "18:30", "19:00", "19:30", "20:00"]
+    today = datetime.now().date()
+    table_index = 0
+    insert_count = 0
+
+    for day_offset in range(-44, 16):
+        tanggal_dt = today + timedelta(days=day_offset)
+        tanggal = tanggal_dt.strftime("%Y-%m-%d")
+        weekday = tanggal_dt.weekday()
+        is_weekend = weekday >= 5
+        daily_total = 5 if is_weekend else 3
+        if day_offset in (-2, -1, 0, 1, 2, 7, 8):
+            daily_total += 2
+
+        for slot in range(daily_total):
+            is_dinner = slot >= max(1, daily_total // 2)
+            waktu_pool = jam_dinner if is_dinner else jam_lunch
+            waktu = waktu_pool[(slot + weekday + day_offset) % len(waktu_pool)]
+            jumlah_tamu = [2, 2, 3, 4, 4, 5, 6, 8, 10][
+                (slot + weekday + abs(day_offset)) % 9
+            ]
+
+            kandidat_meja = [m for m in meja_rows if m["kapasitas"] >= jumlah_tamu]
+            if not kandidat_meja:
+                continue
+            meja = kandidat_meja[table_index % len(kandidat_meja)]
+            table_index += 1
+
+            if day_offset < 0:
+                status = "Dibatalkan" if (slot + weekday) % 9 == 0 else "Selesai"
+            elif day_offset == 0:
+                status = ["Menunggu", "Dikonfirmasi", "Selesai"][slot % 3]
+            else:
+                status = "Dikonfirmasi" if slot % 2 == 0 else "Menunggu"
+
+            nama = nama_tamu[(slot + day_offset) % len(nama_tamu)]
+            telepon = f"08{(8120000000 + insert_count):010d}"
+            reservasi_id = _get_next_reservasi_id(conn)
+            created_at = (
+                datetime.combine(tanggal_dt, datetime.min.time()) -
+                timedelta(days=2, hours=slot)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+
+            cursor.execute("""
+                INSERT INTO reservasi
+                    (id, nama_tamu, no_telepon, jumlah_tamu, tanggal, waktu,
+                     meja_id, lantai, status, catatan, created_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                reservasi_id, nama, telepon, jumlah_tamu, tanggal, waktu,
+                meja["id"], 1, status, f"{marker} #{insert_count + 1}", created_at
+            ))
+            insert_count += 1
+
+    conn.commit()
+    active_meja_ids = [
+        row["meja_id"] for row in cursor.execute(
+            f"""
+            SELECT DISTINCT meja_id
+            FROM reservasi
+            WHERE meja_id IS NOT NULL
+              AND tanggal = ?
+              AND status IN ({_active_status_placeholders()})
+            """,
+            (today.strftime("%Y-%m-%d"), *STATUS_AKTIF)
+        ).fetchall()
+    ]
+    cursor.execute("UPDATE meja SET status = 'Tersedia' WHERE status != 'Maintenance'")
+    for meja_id in active_meja_ids:
+        cursor.execute("UPDATE meja SET status = 'Terisi' WHERE id = ?", (meja_id,))
+    conn.commit()
+    conn.close()
+
+
 def init_database():
     create_tables()
     init_pegawai()
     init_meja()
+    init_dummy_laporan()
+    conn = get_db_connection()
+    try:
+        _hapus_status_reservasi_lama(conn)
+        conn.commit()
+    finally:
+        conn.close()

@@ -110,6 +110,7 @@ class DashboardPage(QWidget):
         layout.addLayout(bottom)
 
     def refresh(self):
+        database.auto_update_reservasi_lewat_waktu()
         today = datetime.now().strftime("%Y-%m-%d")
         conn = database.get_db_connection()
 
@@ -128,7 +129,7 @@ class DashboardPage(QWidget):
         ).fetchone()[0]
 
         total_aktif = conn.execute(
-            "SELECT COUNT(*) FROM reservasi WHERE status IN ('Menunggu','Dikonfirmasi','Duduk')"
+            "SELECT COUNT(*) FROM reservasi WHERE status IN ('Menunggu','Dikonfirmasi')"
         ).fetchone()[0]
 
         self.card_hari_ini.update_value(today_count)

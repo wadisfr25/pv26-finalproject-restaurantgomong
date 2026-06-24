@@ -118,6 +118,16 @@ class ManagerDashboardPage(QWidget):
         info_row.addWidget(pegawai_grp, 3)
         layout.addLayout(info_row)
 
+        ai_grp = QGroupBox("AI Prediksi Jam Ramai")
+        ai_row = QHBoxLayout(ai_grp)
+        ai_row.setSpacing(12)
+        self.card_ai_jam = StatCard("Jam Ramai Hari Ini", "-", "AI", "#8E44AD")
+        self.card_ai_tamu = StatCard("Estimasi Tamu", "0", "AI", "#16A085")
+        self.card_ai_staf = StatCard("Saran Staf", "-", "AI", "#D35400")
+        for c in [self.card_ai_jam, self.card_ai_tamu, self.card_ai_staf]:
+            ai_row.addWidget(c)
+        layout.addWidget(ai_grp)
+
         # ── Row 3: Tabel + chart ──────────────────────────────────────
         bottom = QHBoxLayout()
         bottom.setSpacing(16)
@@ -147,6 +157,7 @@ class ManagerDashboardPage(QWidget):
         layout.addLayout(bottom)
 
     def refresh(self):
+        database.auto_update_reservasi_lewat_waktu()
         today = datetime.now().strftime("%Y-%m-%d")
         month_start = datetime.now().strftime("%Y-%m-01")
         conn = database.get_db_connection()
@@ -192,6 +203,11 @@ class ManagerDashboardPage(QWidget):
         self.card_manajer.update_value(jml_manajer)
         self.card_staf.update_value(jml_staf)
 
+        prediksi = database.get_prediksi_jam_ramai(today)
+        self.card_ai_jam.update_value(prediksi["waktu"] or "-")
+        self.card_ai_tamu.update_value(f"{prediksi['estimasi_tamu']} orang")
+        self.card_ai_staf.update_value(prediksi.get("saran_staf", "-"))
+
         rows = conn.execute("""
             SELECT r.nama_tamu, r.no_telepon, r.jumlah_tamu, r.waktu, r.status
             FROM reservasi r
@@ -221,7 +237,7 @@ class ManagerDashboardPage(QWidget):
         if status_data:
             colors_map = {
                 'Menunggu': '#F39C12', 'Dikonfirmasi': '#3498DB',
-                'Duduk': '#27AE60', 'Selesai': '#95A5A6', 'Dibatalkan': '#E74C3C',
+                'Selesai': '#95A5A6', 'Dibatalkan': '#E74C3C',
             }
             labels = [d['status'] for d in status_data]
             values = [d['total'] for d in status_data]

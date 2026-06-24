@@ -10,7 +10,6 @@ from dialogs.reservasi_dialog import ReservasiDialog
 STATUS_COLORS = {
     'Menunggu':     '#FFF3CD',
     'Dikonfirmasi': '#D1ECF1',
-    'Duduk':        '#D4EDDA',
     'Selesai':      '#E2E3E5',
     'Dibatalkan':   '#F8D7DA',
 }
@@ -24,6 +23,15 @@ COL_TGL    = 5
 COL_WAKTU  = 6
 COL_MEJA   = 7
 COL_STATUS = 8
+
+
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __lt__(self, other):
+        left = self.data(Qt.UserRole + 1)
+        right = other.data(Qt.UserRole + 1)
+        if left is not None and right is not None:
+            return int(left) < int(right)
+        return super().__lt__(other)
 
 
 class ReservasiPage(QWidget):
@@ -61,7 +69,7 @@ class ReservasiPage(QWidget):
 
         self.filter_status = QComboBox()
         self.filter_status.addItems(
-            ["Semua Status", "Menunggu", "Dikonfirmasi", "Duduk", "Selesai", "Dibatalkan"]
+            ["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
         )
         self.filter_status.currentTextChanged.connect(self.apply_filter)
 
@@ -115,6 +123,7 @@ class ReservasiPage(QWidget):
         layout.addLayout(action_row)
 
     def load_data(self):
+        database.auto_update_reservasi_lewat_waktu()
         conn = database.get_db_connection()
         self.all_data = conn.execute("""
             SELECT r.id, r.nama_tamu, r.no_telepon, r.jumlah_tamu,
@@ -138,14 +147,24 @@ class ReservasiPage(QWidget):
             self.table.setCellWidget(row, COL_CHECK, chk)
 
             items = [
-                str(d['id']), d['nama_tamu'], d['no_telepon'], str(d['jumlah_tamu']),
+                str(row + 1), d['nama_tamu'], d['no_telepon'], str(d['jumlah_tamu']),
                 d['tanggal'], d['waktu'], d['nomor_meja'] or '-', d['status']
             ]
             for col_offset, val in enumerate(items):
-                item = QTableWidgetItem(val)
+                item = NumericTableWidgetItem(val) if col_offset == 0 else QTableWidgetItem(val)
                 item.setBackground(bg)
+                if col_offset == 0:
+                    item.setData(Qt.DisplayRole, row + 1)
+                    item.setData(Qt.UserRole, d['id'])
+                    item.setData(Qt.UserRole + 1, row + 1)
                 self.table.setItem(row, col_offset + 1, item)
         self.table.setSortingEnabled(True)
+
+    def _get_row_reservasi_id(self, row):
+        item = self.table.item(row, COL_ID)
+        if not item:
+            return None
+        return item.data(Qt.UserRole) or int(item.text())
 
     def _header_clicked(self, logical_index):
         if logical_index != COL_CHECK:
@@ -166,7 +185,9 @@ class ReservasiPage(QWidget):
         for r in range(self.table.rowCount()):
             w = self.table.cellWidget(r, COL_CHECK)
             if w and w.isChecked():
-                ids.append(int(self.table.item(r, COL_ID).text()))
+                item_id = self._get_row_reservasi_id(r)
+                if item_id:
+                    ids.append(int(item_id))
         return ids
 
     def apply_filter(self):
@@ -184,7 +205,7 @@ class ReservasiPage(QWidget):
         if not selected:
             QMessageBox.warning(self, "Peringatan", "Pilih data reservasi terlebih dahulu.")
             return None
-        return int(self.table.item(self.table.currentRow(), COL_ID).text())
+        return int(self._get_row_reservasi_id(self.table.currentRow()))
 
     def _do_refresh(self):
         self.load_data()
@@ -199,7 +220,7 @@ class ReservasiPage(QWidget):
     def edit_reservasi(self, row, col):
         if col == COL_CHECK:
             return
-        item_id = int(self.table.item(row, COL_ID).text())
+        item_id = int(self._get_row_reservasi_id(row))
         dialog = ReservasiDialog(reservasi_id=item_id, parent=self)
         if dialog.exec() == QDialog.Accepted:
             self._do_refresh()

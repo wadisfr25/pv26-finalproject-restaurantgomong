@@ -69,7 +69,7 @@ class LaporanPage(QWidget):
         self.filter_status.setObjectName("reportStatusFilter")
         self.filter_status.setFixedWidth(150)
         self.filter_status.addItems(
-            ["Semua Status", "Menunggu", "Dikonfirmasi", "Duduk", "Selesai", "Dibatalkan"]
+            ["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
         )
         f_lay.addWidget(self._make_filter_field(status_label, self.filter_status))
 
@@ -105,6 +105,15 @@ class LaporanPage(QWidget):
         filter_layout.addLayout(action_lay)
         filter_layout.addWidget(self.filter_summary)
         layout.addWidget(filter_grp)
+
+        ai_grp = QGroupBox("Analisis AI")
+        ai_layout = QVBoxLayout(ai_grp)
+        ai_layout.setContentsMargins(18, 14, 18, 14)
+        self.ai_summary = QLabel()
+        self.ai_summary.setWordWrap(True)
+        self.ai_summary.setObjectName("reportFilterSummary")
+        ai_layout.addWidget(self.ai_summary)
+        layout.addWidget(ai_grp)
 
         content = QHBoxLayout()
         content.setSpacing(16)
@@ -142,6 +151,7 @@ class LaporanPage(QWidget):
         return wrapper
 
     def refresh(self):
+        database.auto_update_reservasi_lewat_waktu()
         date_from = self.date_from.date().toString("yyyy-MM-dd")
         date_to = self.date_to.date().toString("yyyy-MM-dd")
         status_filter = self.filter_status.currentText()
@@ -176,6 +186,16 @@ class LaporanPage(QWidget):
             f"Menampilkan {len(self.all_data)} data reservasi dari {date_from} sampai {date_to}"
             + ("" if status_filter == "Semua Status" else f" dengan status {status_filter}")
         )
+        prediksi = database.get_prediksi_jam_ramai(date_to)
+        if prediksi["waktu"]:
+            self.ai_summary.setText(
+                f"Prediksi jam ramai untuk {date_to}: {prediksi['waktu']} | "
+                f"Estimasi tamu: {prediksi['estimasi_tamu']} orang | "
+                f"Rekomendasi staf: {prediksi.get('saran_staf', '-')} | "
+                f"{prediksi['keterangan']}"
+            )
+        else:
+            self.ai_summary.setText(prediksi["keterangan"])
         self._update_chart()
 
     def _update_chart(self):
@@ -191,7 +211,6 @@ class LaporanPage(QWidget):
             colors = {
                 'Menunggu': '#F39C12',
                 'Dikonfirmasi': '#3498DB',
-                'Duduk': '#27AE60',
                 'Selesai': '#95A5A6',
                 'Dibatalkan': '#E74C3C',
             }

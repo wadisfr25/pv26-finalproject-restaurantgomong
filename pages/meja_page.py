@@ -21,6 +21,7 @@ class MejaCard(QFrame):
         status_color = {
             'Tersedia': ('#1E8449', '#EAF7EF'),
             'Terisi': ('#C0392B', '#FDEDEC'),
+            'Dibereskan': ('#2874A6', '#EBF5FB'),
             'Maintenance': ('#B9770E', '#FEF5E7'),
         }
         border, bg = status_color.get(meja['status'], ('#7F8C8D', '#F2F3F4'))
@@ -133,7 +134,7 @@ class MejaPage(QWidget):
         self.search_input.textChanged.connect(self.apply_filter)
 
         self.filter_status = QComboBox()
-        self.filter_status.addItems(["Semua Status", "Tersedia", "Terisi", "Maintenance"])
+        self.filter_status.addItems(["Semua Status", "Tersedia", "Terisi", "Dibereskan", "Maintenance"])
         self.filter_status.currentTextChanged.connect(self.apply_filter)
 
         self.filter_kapasitas = QComboBox()
@@ -155,6 +156,7 @@ class MejaPage(QWidget):
         for label, color in [
             ("Tersedia", "#1E8449"),
             ("Terisi", "#C0392B"),
+            ("Dibereskan", "#2874A6"),
             ("Maintenance", "#B9770E"),
         ]:
             lbl = QLabel(f"● {label}")
@@ -208,10 +210,11 @@ class MejaPage(QWidget):
             meja_list = groups[cap]
             tersedia_grp = sum(1 for m in meja_list if m['status'] == 'Tersedia')
             terisi_grp = sum(1 for m in meja_list if m['status'] == 'Terisi')
+            dibereskan_grp = sum(1 for m in meja_list if m['status'] == 'Dibereskan')
 
             group = QGroupBox(
                 f"Meja {cap} Orang - {len(meja_list)} meja "
-                f"({tersedia_grp} tersedia / {terisi_grp} terisi)"
+                f"({tersedia_grp} tersedia / {terisi_grp} terisi / {dibereskan_grp} dibereskan)"
             )
             group.setObjectName("floorGroup")
             grid = QGridLayout(group)
@@ -264,9 +267,10 @@ class MejaPage(QWidget):
         total = len(tables)
         tersedia = sum(1 for t in tables if t['status'] == 'Tersedia')
         terisi = sum(1 for t in tables if t['status'] == 'Terisi')
+        dibereskan = sum(1 for t in tables if t['status'] == 'Dibereskan')
         maintenance = sum(1 for t in tables if t['status'] == 'Maintenance')
         self.summary_lbl.setText(
-            f"Total: {total} meja | Tersedia: {tersedia} | Terisi: {terisi} | Maintenance: {maintenance}"
+            f"Total: {total} meja | Tersedia: {tersedia} | Terisi: {terisi} | Dibereskan: {dibereskan} | Maintenance: {maintenance}"
         )
 
     def tambah_meja(self):
@@ -305,7 +309,7 @@ class MejaPage(QWidget):
         aktif = conn.execute("""
             SELECT r.nama_tamu, r.waktu, r.tanggal, r.status
             FROM reservasi r
-            WHERE r.meja_id = ? AND r.status IN ('Menunggu','Dikonfirmasi','Duduk')
+            WHERE r.meja_id = ? AND r.status IN ('Menunggu','Dikonfirmasi')
             ORDER BY r.tanggal, r.waktu
         """, (meja_id,)).fetchall()
         conn.close()
@@ -327,7 +331,10 @@ class MejaPage(QWidget):
         btns[btn_edit] = 'Edit'
         btn_delete = msg.addButton("Hapus", QMessageBox.ActionRole)
         btns[btn_delete] = 'Hapus'
-        if meja['status'] != 'Maintenance':
+        if meja['status'] == 'Dibereskan':
+            btn_t = msg.addButton("Set Tersedia", QMessageBox.ActionRole)
+            btns[btn_t] = 'Tersedia'
+        elif meja['status'] != 'Maintenance':
             btn_m = msg.addButton("Set Maintenance", QMessageBox.ActionRole)
             btns[btn_m] = 'Maintenance'
         else:

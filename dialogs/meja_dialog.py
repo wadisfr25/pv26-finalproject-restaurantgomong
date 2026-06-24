@@ -38,10 +38,10 @@ class MejaDialog(QDialog):
         self.lantai_input.setValue(1)
 
         self.jenis_combo = QComboBox()
-        self.jenis_combo.addItems(["Kecil", "Besar", "VIP", "Outdoor"])
+        self.jenis_combo.addItems(["Kecil", "Besar", "VIP", "Outdoor", "Window Seat", "Family", "Private Room"])
 
         self.status_combo = QComboBox()
-        self.status_combo.addItems(["Tersedia", "Terisi", "Maintenance"])
+        self.status_combo.addItems(["Tersedia", "Terisi", "Dibereskan", "Maintenance"])
 
         form.addRow("Nomor Meja *", self.nomor_input)
         form.addRow("Kapasitas *", self.kapasitas_input)

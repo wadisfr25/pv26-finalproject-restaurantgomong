@@ -68,7 +68,7 @@ class ReservasiDialog(QDialog):
 
         self.status_combo = QComboBox()
         self.status_combo.addItems(
-            ["Menunggu", "Dikonfirmasi", "Duduk", "Selesai", "Dibatalkan"]
+            ["Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
         )
 
         self.catatan_input = QTextEdit()
@@ -111,7 +111,7 @@ class ReservasiDialog(QDialog):
         jumlah = self.jumlah_input.value()
         tanggal = self.tanggal_input.date().toString("yyyy-MM-dd")
         waktu = self.waktu_combo.currentText()
-        tables = database.get_available_tables(jumlah, tanggal, waktu, self.reservasi_id)
+        tables = database.get_recommended_tables(jumlah, tanggal, waktu, self.reservasi_id)
 
         self.meja_combo.clear()
         self.meja_combo.addItem("— Pilih meja (opsional) —", None)
@@ -122,7 +122,14 @@ class ReservasiDialog(QDialog):
             self.info_meja_lbl.setText("")
         else:
             self.info_meja_lbl.setText(
-                "ℹ️  Meja yang dipilih akan otomatis ditandai Terisi setelah disimpan."
+                "Meja yang dipilih akan otomatis ditandai Terisi setelah disimpan."
+            )
+            best_table = tables[0]
+            self.meja_combo.setCurrentIndex(1)
+            self.info_meja_lbl.setText(
+                "Rekomendasi AI: "
+                f"{best_table['nomor_meja']} karena sisa kursinya {best_table['sisa_kursi']} "
+                f"dan riwayat pemakaiannya {best_table['jumlah_pemakaian']} kali."
             )
 
     def load_data(self):
