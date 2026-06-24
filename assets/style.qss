@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   WADIS RESTAURANT — Modern UI Theme
+   GOMONG RESTAURANT — Modern UI Theme
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Global ──────────────────────────────────────────────────── */
@@ -414,67 +414,70 @@ QDialog {
 
 /* Report filter */
 #reportFilterGroup {
-    background: white;
+    background: #FFFFFF;
     border: 1.5px solid #DDE4EC;
-    border-radius: 14px;
+    border-radius: 12px;
     margin-top: 14px;
 }
 #reportFilterGroup::title {
     subcontrol-origin: margin;
     left: 18px;
-    padding: 0 8px;
+    padding: 0 10px;
     color: #334155;
-    background: white;
+    background: #FFFFFF;
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.3px;
 }
 #reportFilterField {
     background: transparent;
-    min-width: 136px;
-    max-width: 160px;
+    min-width: 156px;
+    max-width: 196px;
 }
 #reportFilterLabel {
     background: transparent;
-    color: #64748B;
+    color: #475569;
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
 }
 #reportFilterGroup QDateEdit,
 #reportFilterGroup QComboBox {
-    min-height: 22px;
-    border-radius: 9px;
+    min-height: 24px;
+    border-radius: 8px;
     border: 1.5px solid #E2E8F0;
-    background: #F8FAFC;
-    padding: 7px 11px;
+    background: #FFFFFF;
+    padding: 8px 12px;
     color: #1E2D3D;
     font-weight: 600;
 }
 #reportStatusFilter {
-    max-width: 150px;
+    min-width: 176px;
 }
 #reportFilterGroup QDateEdit:hover,
 #reportFilterGroup QComboBox:hover {
-    border-color: #CBD5E1;
-    background: #FFFFFF;
+    border-color: #94A3B8;
+    background: #FAFCFF;
 }
 #reportFilterGroup QDateEdit:focus,
 #reportFilterGroup QComboBox:focus {
     border-color: #C0392B;
     background: #FFFFFF;
 }
+#reportFilterGroup QComboBox::drop-down {
+    width: 28px;
+}
 QPushButton#reportApplyButton {
     background: #1E2D3D;
     color: #FFFFFF;
     border: 1px solid #1E2D3D;
-    border-radius: 9px;
-    padding: 0;
+    border-radius: 8px;
+    padding: 0 16px;
     font-size: 12px;
     font-weight: 800;
-    min-width: 108px;
-    min-height: 38px;
-    max-height: 38px;
+    min-width: 116px;
+    min-height: 40px;
+    max-height: 40px;
 }
 QPushButton#reportApplyButton:hover {
     background: #334155;
@@ -488,16 +491,31 @@ QPushButton#reportApplyButton:pressed {
 }
 #reportFilterGroup #primaryButton,
 #reportFilterGroup #successButton {
-    border-radius: 9px;
+    border-radius: 7px;
     margin-top: 0;
     min-width: 104px;
+    min-height: 34px;
+    max-height: 34px;
+    padding: 0 13px;
+    font-size: 12px;
+}
+#reportExportBar {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+}
+#reportExportLabel {
+    background: transparent;
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 800;
 }
 #reportFilterSummary {
-    background: #F8FAFC;
-    color: #64748B;
-    border: 1px solid #EEF2F7;
-    border-radius: 9px;
-    padding: 8px 10px;
+    background: #FFFFFF;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 10px 12px;
     font-size: 11px;
     font-weight: 600;
 }

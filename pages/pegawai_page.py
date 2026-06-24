@@ -1,21 +1,28 @@
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QPushButton, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QMessageBox, QDialog, QCheckBox,
-                               QLineEdit, QComboBox)
-from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QHeaderView,
+    QMessageBox,
+    QPushButton,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 import database.database as database
 from dialogs.pegawai_dialog import PegawaiDialog
+from ui.ui_loader import load_ui
 
 JABATAN_COLORS = {
-    'Manajer': '#D1ECF1',
-    'Staf':    '#F8F9FA',
+    "Manajer": "#D1ECF1",
+    "Staf": "#F8F9FA",
 }
 
-COL_CHECK   = 0
-COL_ID      = 1
-COL_NAMA    = 2
-COL_USER    = 3
+COL_CHECK = 0
+COL_ID = 1
+COL_NAMA = 2
+COL_USER = 3
 COL_JABATAN = 4
 
 
@@ -28,74 +35,39 @@ class PegawaiPage(QWidget):
         self.refresh()
 
     def init_ui(self):
+        self.ui_root = load_ui(self, "pegawai_page.ui")
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(25, 20, 25, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui_root)
 
-        # Header
-        hdr = QHBoxLayout()
-        title = QLabel("👥 Manajemen Pegawai")
-        title.setObjectName("pageHeader")
-        add_btn = QPushButton("＋  Tambah Pegawai")
-        add_btn.setObjectName("primaryButton")
-        add_btn.setCursor(Qt.PointingHandCursor)
-        add_btn.clicked.connect(self.tambah_pegawai)
-        hdr.addWidget(title)
-        hdr.addStretch()
-        hdr.addWidget(add_btn)
-        layout.addLayout(hdr)
-
-        filter_row = QHBoxLayout()
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Cari nama atau username pegawai...")
-        self.search_input.textChanged.connect(self.apply_filter)
-
-        self.filter_jabatan = QComboBox()
+        self.add_btn = self.ui_root.findChild(QPushButton, "primaryButton")
+        self.hapus_btn = self.ui_root.findChild(QPushButton, "dangerButton")
+        self.pageHeader.setText("👥 Manajemen Pegawai")
+        self.add_btn.setText("＋  Tambah Pegawai")
+        self.edit_btn.setText("✏️  Edit")
+        self.hapus_btn.setText("🗑️  Hapus Terpilih")
         self.filter_jabatan.addItems(["Semua Jabatan", "Manajer", "Staf"])
-        self.filter_jabatan.currentTextChanged.connect(self.apply_filter)
-
-        filter_row.addWidget(self.search_input, 3)
-        filter_row.addWidget(self.filter_jabatan, 1)
-        layout.addLayout(filter_row)
-
-        # Tabel
-        self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["✓", "ID", "Nama", "Username", "Jabatan"])
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.verticalHeader().setVisible(False)
-        self.table.setSortingEnabled(True)
         self.table.cellDoubleClicked.connect(self.edit_pegawai)
+        self.table.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
         hv = self.table.horizontalHeader()
-        hv.setSectionResizeMode(COL_CHECK,   QHeaderView.ResizeToContents)
-        hv.setSectionResizeMode(COL_ID,      QHeaderView.ResizeToContents)
-        hv.setSectionResizeMode(COL_NAMA,    QHeaderView.Stretch)
-        hv.setSectionResizeMode(COL_USER,    QHeaderView.Stretch)
+        hv.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeToContents)
+        hv.setSectionResizeMode(COL_ID, QHeaderView.ResizeToContents)
+        hv.setSectionResizeMode(COL_NAMA, QHeaderView.Stretch)
+        hv.setSectionResizeMode(COL_USER, QHeaderView.Stretch)
         hv.setSectionResizeMode(COL_JABATAN, QHeaderView.ResizeToContents)
 
-        self.table.horizontalHeader().sectionClicked.connect(self._header_clicked)
-        layout.addWidget(self.table)
-
-        # Action buttons
-        action_row = QHBoxLayout()
-        edit_btn = QPushButton("✏️  Edit")
-        edit_btn.clicked.connect(self.edit_pegawai_selected)
-
-        self.hapus_btn = QPushButton("🗑️  Hapus Terpilih")
-        self.hapus_btn.setObjectName("dangerButton")
+        self.add_btn.clicked.connect(self.tambah_pegawai)
+        self.search_input.textChanged.connect(self.apply_filter)
+        self.filter_jabatan.currentTextChanged.connect(self.apply_filter)
+        self.edit_btn.clicked.connect(self.edit_pegawai_selected)
         self.hapus_btn.clicked.connect(self.hapus_terpilih)
-
-        action_row.addWidget(edit_btn)
-        action_row.addStretch()
-        action_row.addWidget(self.hapus_btn)
-        layout.addLayout(action_row)
 
     def refresh(self):
         self.all_data = database.get_all_pegawai()
         self.apply_filter()
-        # Sync ke manager dashboard jika ada callback
         if self.refresh_manager_callback:
             self.refresh_manager_callback()
 
@@ -104,22 +76,19 @@ class PegawaiPage(QWidget):
         jabatan_filter = self.filter_jabatan.currentText()
         data = [
             d for d in self.all_data
-            if (not search or search in d['nama'].lower() or search in d['username'].lower())
-            and (jabatan_filter == "Semua Jabatan" or d['jabatan'] == jabatan_filter)
+            if (not search or search in d["nama"].lower() or search in d["username"].lower())
+            and (jabatan_filter == "Semua Jabatan" or d["jabatan"] == jabatan_filter)
         ]
 
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
         for row, d in enumerate(data):
             self.table.insertRow(row)
-            bg = QColor(JABATAN_COLORS.get(d['jabatan'], '#FFFFFF'))
-
+            bg = QColor(JABATAN_COLORS.get(d["jabatan"], "#FFFFFF"))
             chk = QCheckBox()
             chk.setStyleSheet("margin-left:6px;")
             self.table.setCellWidget(row, COL_CHECK, chk)
-
-            items = [str(d['id']), d['nama'], d['username'], d['jabatan']]
-            for col_offset, val in enumerate(items):
+            for col_offset, val in enumerate([str(d["id"]), d["nama"], d["username"], d["jabatan"]]):
                 item = QTableWidgetItem(val)
                 item.setBackground(bg)
                 self.table.setItem(row, col_offset + 1, item)
@@ -133,11 +102,10 @@ class PegawaiPage(QWidget):
             for r in range(self.table.rowCount())
             if self.table.cellWidget(r, COL_CHECK)
         )
-        new_state = not any_checked
         for r in range(self.table.rowCount()):
             w = self.table.cellWidget(r, COL_CHECK)
             if w:
-                w.setChecked(new_state)
+                w.setChecked(not any_checked)
 
     def _get_checked_ids(self):
         ids = []
@@ -185,21 +153,19 @@ class PegawaiPage(QWidget):
                 return
             ids = [item_id]
 
-        # Cek jika ada manajer di daftar hapus
         conn = database.get_db_connection()
-        jumlah_manajer_total = conn.execute(
-            "SELECT COUNT(*) FROM pegawai WHERE jabatan = 'Manajer'"
-        ).fetchone()[0]
+        jumlah_manajer_total = conn.execute("SELECT COUNT(*) FROM pegawai WHERE jabatan = 'Manajer'").fetchone()[0]
         manajer_terpilih = conn.execute(
-            f"SELECT COUNT(*) FROM pegawai WHERE jabatan = 'Manajer' AND id IN ({','.join('?'*len(ids))})",
-            ids
+            f"SELECT COUNT(*) FROM pegawai WHERE jabatan = 'Manajer' AND id IN ({','.join('?' * len(ids))})",
+            ids,
         ).fetchone()[0]
         conn.close()
 
         if manajer_terpilih >= jumlah_manajer_total:
             QMessageBox.warning(
-                self, "Tidak Dapat Dihapus",
-                "Tidak dapat menghapus semua Manajer. Minimal satu Manajer harus tetap ada."
+                self,
+                "Tidak Dapat Dihapus",
+                "Tidak dapat menghapus semua Manajer. Minimal satu Manajer harus tetap ada.",
             )
             return
 
@@ -212,9 +178,10 @@ class PegawaiPage(QWidget):
             nama_list = [self.table.item(self.table.currentRow(), COL_NAMA).text()]
 
         reply = QMessageBox.question(
-            self, "Konfirmasi Hapus",
-            f"Yakin ingin menghapus {len(ids)} pegawai berikut?\n" + "\n".join(f"• {n}" for n in nama_list),
-            QMessageBox.Yes | QMessageBox.No
+            self,
+            "Konfirmasi Hapus",
+            f"Yakin ingin menghapus {len(ids)} pegawai berikut?\n" + "\n".join(f"- {n}" for n in nama_list),
+            QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             ok, err = database.hapus_banyak_pegawai(ids)

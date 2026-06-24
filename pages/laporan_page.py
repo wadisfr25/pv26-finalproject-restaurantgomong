@@ -1,29 +1,35 @@
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QPushButton, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QComboBox, QDateEdit, QMessageBox,
-                               QFileDialog, QGroupBox, QAbstractSpinBox)
-from PySide6.QtCore import QDate, Qt
-from PySide6.QtGui import QPdfWriter, QTextDocument
-from datetime import datetime
 import csv
 import html
+from datetime import datetime
 
-import database.database as database
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from PySide6.QtCore import QDate, Qt
+from PySide6.QtGui import QPdfWriter, QTextDocument
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QComboBox,
+    QDateEdit,
+    QHeaderView,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+import database.database as database
+from ui.ui_loader import load_ui
 
 
-class ReportDateEdit(QDateEdit):
-    def __init__(self, date):
-        super().__init__(date)
-        self.setCalendarPopup(True)
-        self.setDisplayFormat("dd MMM yyyy")
-        self.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
-        self.setKeyboardTracking(False)
-        self.setFixedWidth(136)
-
-    def wheelEvent(self, event):
-        event.ignore()
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __lt__(self, other):
+        left = self.data(Qt.UserRole + 1)
+        right = other.data(Qt.UserRole + 1)
+        if left is not None and right is not None:
+            return int(left) < int(right)
+        return super().__lt__(other)
 
 
 class LaporanPage(QWidget):
@@ -34,121 +40,40 @@ class LaporanPage(QWidget):
         self.refresh()
 
     def init_ui(self):
+        self.ui_root = load_ui(self, "laporan_page.ui")
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(28, 24, 28, 24)
-        layout.setSpacing(18)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui_root)
 
-        title = QLabel("Laporan & Statistik")
-        title.setObjectName("pageHeader")
-        layout.addWidget(title)
+        date_edits = self.ui_root.findChildren(QDateEdit, "reportDateInput")
+        self.date_from, self.date_to = date_edits
+        self.filter_status = self.ui_root.findChild(QComboBox, "reportStatusFilter")
+        self.apply_btn = self.ui_root.findChild(QPushButton, "reportApplyButton")
+        self.export_btn = self.ui_root.findChild(QPushButton, "primaryButton")
+        self.export_pdf_btn = self.ui_root.findChild(QPushButton, "successButton")
+        summaries = self.ui_root.findChildren(QLabel, "reportFilterSummary")
+        self.filter_summary, self.ai_summary = summaries
+        self.pageHeader.setText("Laporan & Statistik")
+        self.date_from.setDate(QDate.currentDate().addDays(-30))
+        self.date_to.setDate(QDate.currentDate())
+        self.filter_status.addItems(["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"])
 
-        filter_grp = QGroupBox("Filter Data")
-        filter_grp.setObjectName("reportFilterGroup")
-        filter_layout = QVBoxLayout(filter_grp)
-        filter_layout.setContentsMargins(18, 20, 18, 16)
-        filter_layout.setSpacing(12)
-
-        f_lay = QHBoxLayout()
-        f_lay.setSpacing(12)
-
-        date_from_label = QLabel("Dari")
-        date_from_label.setObjectName("reportFilterLabel")
-        self.date_from = ReportDateEdit(QDate.currentDate().addDays(-30))
-        self.date_from.setObjectName("reportDateInput")
-        f_lay.addWidget(self._make_filter_field(date_from_label, self.date_from))
-
-        date_to_label = QLabel("Sampai")
-        date_to_label.setObjectName("reportFilterLabel")
-        self.date_to = ReportDateEdit(QDate.currentDate())
-        self.date_to.setObjectName("reportDateInput")
-        f_lay.addWidget(self._make_filter_field(date_to_label, self.date_to))
-
-        status_label = QLabel("Status")
-        status_label.setObjectName("reportFilterLabel")
-        self.filter_status = QComboBox()
-        self.filter_status.setObjectName("reportStatusFilter")
-        self.filter_status.setFixedWidth(150)
-        self.filter_status.addItems(
-            ["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
-        )
-        f_lay.addWidget(self._make_filter_field(status_label, self.filter_status))
-
-        apply_btn = QPushButton("Terapkan")
-        apply_btn.setObjectName("reportApplyButton")
-        apply_btn.setFixedWidth(108)
-        apply_btn.setFixedHeight(38)
-        apply_btn.clicked.connect(self.refresh)
-        f_lay.addWidget(apply_btn, 0, Qt.AlignBottom)
-
-        f_lay.addStretch(1)
-
-        action_lay = QHBoxLayout()
-        action_lay.setSpacing(10)
-        action_lay.addStretch(1)
-
-        export_btn = QPushButton("Export CSV")
-        export_btn.setObjectName("primaryButton")
-        export_btn.setFixedHeight(38)
-        export_btn.clicked.connect(self.export_csv)
-        action_lay.addWidget(export_btn)
-
-        export_pdf_btn = QPushButton("Export PDF")
-        export_pdf_btn.setObjectName("successButton")
-        export_pdf_btn.setFixedHeight(38)
-        export_pdf_btn.clicked.connect(self.export_pdf)
-        action_lay.addWidget(export_pdf_btn)
-
-        self.filter_summary = QLabel()
-        self.filter_summary.setObjectName("reportFilterSummary")
-
-        filter_layout.addLayout(f_lay)
-        filter_layout.addLayout(action_lay)
-        filter_layout.addWidget(self.filter_summary)
-        layout.addWidget(filter_grp)
-
-        ai_grp = QGroupBox("Analisis AI")
-        ai_layout = QVBoxLayout(ai_grp)
-        ai_layout.setContentsMargins(18, 14, 18, 14)
-        self.ai_summary = QLabel()
-        self.ai_summary.setWordWrap(True)
-        self.ai_summary.setObjectName("reportFilterSummary")
-        ai_layout.addWidget(self.ai_summary)
-        layout.addWidget(ai_grp)
-
-        content = QHBoxLayout()
-        content.setSpacing(16)
-
-        self.table = QTableWidget()
         self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(
-            ["ID", "Nama Tamu", "Tamu", "Tanggal", "Waktu", "Status"]
-        )
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.verticalHeader().setVisible(False)
-        self.table.setSortingEnabled(True)
+        self.table.setHorizontalHeaderLabels(["ID", "Nama Tamu", "Tamu", "Tanggal", "Waktu", "Status"])
         hdr = self.table.horizontalHeader()
+        hdr.setSectionResizeMode(0, QHeaderView.Fixed)
+        hdr.resizeSection(0, 56)
         hdr.setSectionResizeMode(1, QHeaderView.Stretch)
-        for i in [0, 2, 3, 4, 5]:
+        for i in [2, 3, 4, 5]:
             hdr.setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
-        self.figure = Figure(figsize=(5, 4), dpi=90, facecolor='none')
+        self.figure = Figure(figsize=(5, 4), dpi=90, facecolor="none")
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setMinimumWidth(320)
+        self.chart_layout.addWidget(self.canvas)
 
-        content.addWidget(self.table, 3)
-        content.addWidget(self.canvas, 2)
-        layout.addLayout(content)
-
-    def _make_filter_field(self, label, field):
-        wrapper = QWidget()
-        wrapper.setObjectName("reportFilterField")
-        wrapper_layout = QVBoxLayout(wrapper)
-        wrapper_layout.setContentsMargins(0, 0, 0, 0)
-        wrapper_layout.setSpacing(5)
-        wrapper_layout.addWidget(label)
-        wrapper_layout.addWidget(field)
-        return wrapper
+        self.apply_btn.clicked.connect(self.refresh)
+        self.export_btn.clicked.connect(self.export_csv)
+        self.export_pdf_btn.clicked.connect(self.export_pdf)
 
     def refresh(self):
         database.auto_update_reservasi_lewat_waktu()
@@ -176,10 +101,16 @@ class LaporanPage(QWidget):
         for row, d in enumerate(self.all_data):
             self.table.insertRow(row)
             for col, val in enumerate([
-                str(d['id']), d['nama_tamu'], str(d['jumlah_tamu']),
-                d['tanggal'], d['waktu'], d['status']
+                str(row + 1), d["nama_tamu"], str(d["jumlah_tamu"]),
+                d["tanggal"], d["waktu"], d["status"],
             ]):
-                self.table.setItem(row, col, QTableWidgetItem(val))
+                item = NumericTableWidgetItem(val) if col == 0 else QTableWidgetItem(val)
+                if col == 0:
+                    item.setData(Qt.DisplayRole, row + 1)
+                    item.setData(Qt.UserRole, d["id"])
+                    item.setData(Qt.UserRole + 1, row + 1)
+                    item.setTextAlignment(Qt.AlignCenter)
+                self.table.setItem(row, col, item)
         self.table.setSortingEnabled(True)
 
         self.filter_summary.setText(
@@ -201,30 +132,26 @@ class LaporanPage(QWidget):
     def _update_chart(self):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-        ax.set_facecolor('#F8F9FA')
-
+        ax.set_facecolor("#F8F9FA")
         status_counts = {}
         for d in self.all_data:
-            status_counts[d['status']] = status_counts.get(d['status'], 0) + 1
+            status_counts[d["status"]] = status_counts.get(d["status"], 0) + 1
 
         if status_counts:
             colors = {
-                'Menunggu': '#F39C12',
-                'Dikonfirmasi': '#3498DB',
-                'Selesai': '#95A5A6',
-                'Dibatalkan': '#E74C3C',
+                "Menunggu": "#F39C12",
+                "Dikonfirmasi": "#3498DB",
+                "Selesai": "#95A5A6",
+                "Dibatalkan": "#E74C3C",
             }
             labels = list(status_counts.keys())
             values = list(status_counts.values())
-            bar_colors = [colors.get(label, '#BDC3C7') for label in labels]
-            bars = ax.bar(labels, values, color=bar_colors, width=0.5)
-            ax.set_title('Distribusi Status Reservasi', fontsize=11)
+            bars = ax.bar(labels, values, color=[colors.get(label, "#BDC3C7") for label in labels], width=0.5)
+            ax.set_title("Distribusi Status Reservasi", fontsize=11)
             ax.bar_label(bars, padding=3, fontsize=9)
-            ax.tick_params(axis='x', labelrotation=15)
+            ax.tick_params(axis="x", labelrotation=15)
         else:
-            ax.text(0.5, 0.5, 'Tidak ada data', ha='center', va='center',
-                    transform=ax.transAxes)
-
+            ax.text(0.5, 0.5, "Tidak ada data", ha="center", va="center", transform=ax.transAxes)
         self.figure.tight_layout()
         self.canvas.draw()
 
@@ -233,24 +160,18 @@ class LaporanPage(QWidget):
             QMessageBox.warning(self, "Peringatan", "Tidak ada data untuk diekspor.")
             return
         path, _ = QFileDialog.getSaveFileName(
-            self, "Export CSV",
-            f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.csv",
-            "CSV Files (*.csv)"
+            self, "Export CSV", f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.csv", "CSV Files (*.csv)"
         )
         if not path:
             return
         if not path.lower().endswith(".csv"):
             path += ".csv"
-
         try:
-            with open(path, 'w', newline='', encoding='utf-8') as f:
+            with open(path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(["ID", "Nama Tamu", "Jumlah Tamu", "Tanggal", "Waktu", "Status"])
                 for d in self.all_data:
-                    writer.writerow([
-                        d['id'], d['nama_tamu'], d['jumlah_tamu'],
-                        d['tanggal'], d['waktu'], d['status']
-                    ])
+                    writer.writerow([d["id"], d["nama_tamu"], d["jumlah_tamu"], d["tanggal"], d["waktu"], d["status"]])
             QMessageBox.information(self, "Sukses", f"Data berhasil diekspor:\n{path}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Gagal export CSV: {e}")
@@ -259,11 +180,8 @@ class LaporanPage(QWidget):
         if not self.all_data:
             QMessageBox.warning(self, "Peringatan", "Tidak ada data untuk diekspor.")
             return
-
         path, _ = QFileDialog.getSaveFileName(
-            self, "Export PDF",
-            f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.pdf",
-            "PDF Files (*.pdf)"
+            self, "Export PDF", f"laporan_gomong_{datetime.now().strftime('%Y%m%d')}.pdf", "PDF Files (*.pdf)"
         )
         if not path:
             return
@@ -273,7 +191,6 @@ class LaporanPage(QWidget):
         date_from = self.date_from.date().toString("yyyy-MM-dd")
         date_to = self.date_to.date().toString("yyyy-MM-dd")
         status_filter = self.filter_status.currentText()
-
         rows_html = ""
         for d in self.all_data:
             rows_html += (
@@ -313,7 +230,6 @@ class LaporanPage(QWidget):
             </body>
             </html>
         """)
-
         try:
             writer = QPdfWriter(path)
             writer.setTitle("Laporan Reservasi Restaurant Gomong")

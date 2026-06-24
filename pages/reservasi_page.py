@@ -1,27 +1,35 @@
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QPushButton, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QLineEdit, QComboBox, QMessageBox,
-                               QDialog, QCheckBox)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QHeaderView,
+    QMessageBox,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+    QPushButton,
+)
+
 import database.database as database
 from dialogs.reservasi_dialog import ReservasiDialog
+from ui.ui_loader import load_ui
 
 STATUS_COLORS = {
-    'Menunggu':     '#FFF3CD',
-    'Dikonfirmasi': '#D1ECF1',
-    'Selesai':      '#E2E3E5',
-    'Dibatalkan':   '#F8D7DA',
+    "Menunggu": "#FFF3CD",
+    "Dikonfirmasi": "#D1ECF1",
+    "Selesai": "#E2E3E5",
+    "Dibatalkan": "#F8D7DA",
 }
 
-COL_CHECK  = 0
-COL_ID     = 1
-COL_NAMA   = 2
-COL_TELP   = 3
-COL_TAMU   = 4
-COL_TGL    = 5
-COL_WAKTU  = 6
-COL_MEJA   = 7
+COL_CHECK = 0
+COL_ID = 1
+COL_NAMA = 2
+COL_TELP = 3
+COL_TAMU = 4
+COL_TGL = 5
+COL_WAKTU = 6
+COL_MEJA = 7
 COL_STATUS = 8
 
 
@@ -44,83 +52,42 @@ class ReservasiPage(QWidget):
         self.load_data()
 
     def init_ui(self):
+        self.ui_root = load_ui(self, "reservasi_page.ui")
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(25, 20, 25, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui_root)
 
-        # Header
-        hdr = QHBoxLayout()
-        title = QLabel("📋 Manajemen Reservasi")
-        title.setObjectName("pageHeader")
-        add_btn = QPushButton("＋  Tambah Reservasi")
-        add_btn.setObjectName("primaryButton")
-        add_btn.setCursor(Qt.PointingHandCursor)
-        add_btn.clicked.connect(self.tambah_reservasi)
-        hdr.addWidget(title)
-        hdr.addStretch()
-        hdr.addWidget(add_btn)
-        layout.addLayout(hdr)
-
-        # Search & filter
-        filter_row = QHBoxLayout()
-        self.search_input = QLineEdit()
+        self.add_btn = self.ui_root.findChild(QPushButton, "primaryButton")
+        self.konfirmasi_btn = self.ui_root.findChild(QPushButton, "successButton")
+        self.hapus_btn = self.ui_root.findChild(QPushButton, "dangerButton")
+        self.pageHeader.setText("📋 Manajemen Reservasi")
+        self.add_btn.setText("＋  Tambah Reservasi")
+        self.edit_btn.setText("✏️  Edit")
+        self.konfirmasi_btn.setText("✅  Konfirmasi")
+        self.selesai_btn.setText("🏁  Tandai Selesai")
+        self.hapus_btn.setText("🗑️  Hapus Terpilih")
         self.search_input.setPlaceholderText("🔍  Cari nama tamu atau nomor telepon...")
-        self.search_input.textChanged.connect(self.apply_filter)
-
-        self.filter_status = QComboBox()
-        self.filter_status.addItems(
-            ["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
-        )
-        self.filter_status.currentTextChanged.connect(self.apply_filter)
-
-        filter_row.addWidget(self.search_input, 3)
-        filter_row.addWidget(self.filter_status, 1)
-        layout.addLayout(filter_row)
-
-        # Table
-        self.table = QTableWidget()
+        self.filter_status.addItems(["Semua Status", "Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"])
         self.table.setColumnCount(9)
-        self.table.setHorizontalHeaderLabels(
-            ["✓", "ID", "Nama Tamu", "Telepon", "Tamu", "Tanggal", "Waktu", "Meja", "Status"]
-        )
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.verticalHeader().setVisible(False)
-        self.table.setSortingEnabled(True)
+        self.table.setHorizontalHeaderLabels(["✓", "ID", "Nama Tamu", "Telepon", "Tamu", "Tanggal", "Waktu", "Meja", "Status"])
         self.table.cellDoubleClicked.connect(self.edit_reservasi)
         self.table.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
         hv = self.table.horizontalHeader()
         hv.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeToContents)
-        hv.setSectionResizeMode(COL_ID,    QHeaderView.ResizeToContents)
-        hv.setSectionResizeMode(COL_NAMA,  QHeaderView.Stretch)
-        hv.setSectionResizeMode(COL_TELP,  QHeaderView.ResizeToContents)
+        hv.setSectionResizeMode(COL_ID, QHeaderView.ResizeToContents)
+        hv.setSectionResizeMode(COL_NAMA, QHeaderView.Stretch)
+        hv.setSectionResizeMode(COL_TELP, QHeaderView.ResizeToContents)
         for i in [COL_TAMU, COL_TGL, COL_WAKTU, COL_MEJA, COL_STATUS]:
             hv.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        layout.addWidget(self.table)
 
-        # Action buttons
-        action_row = QHBoxLayout()
-        edit_btn = QPushButton("✏️  Edit")
-        edit_btn.clicked.connect(self.edit_reservasi_selected)
-
-        konfirmasi_btn = QPushButton("✅  Konfirmasi")
-        konfirmasi_btn.setObjectName("successButton")
-        konfirmasi_btn.clicked.connect(self.konfirmasi_reservasi)
-
-        selesai_btn = QPushButton("🏁  Tandai Selesai")
-        selesai_btn.clicked.connect(lambda: self.update_status("Selesai"))
-
-        hapus_btn = QPushButton("🗑️  Hapus Terpilih")
-        hapus_btn.setObjectName("dangerButton")
-        hapus_btn.clicked.connect(self.hapus_terpilih)
-
-        action_row.addWidget(edit_btn)
-        action_row.addWidget(konfirmasi_btn)
-        action_row.addWidget(selesai_btn)
-        action_row.addStretch()
-        action_row.addWidget(hapus_btn)
-        layout.addLayout(action_row)
+        self.add_btn.clicked.connect(self.tambah_reservasi)
+        self.search_input.textChanged.connect(self.apply_filter)
+        self.filter_status.currentTextChanged.connect(self.apply_filter)
+        self.edit_btn.clicked.connect(self.edit_reservasi_selected)
+        self.konfirmasi_btn.clicked.connect(self.konfirmasi_reservasi)
+        self.selesai_btn.clicked.connect(lambda: self.update_status("Selesai"))
+        self.hapus_btn.clicked.connect(self.hapus_terpilih)
 
     def load_data(self):
         database.auto_update_reservasi_lewat_waktu()
@@ -140,22 +107,20 @@ class ReservasiPage(QWidget):
         self.table.setRowCount(0)
         for row, d in enumerate(data):
             self.table.insertRow(row)
-            bg = QColor(STATUS_COLORS.get(d['status'], '#FFFFFF'))
-
+            bg = QColor(STATUS_COLORS.get(d["status"], "#FFFFFF"))
             chk = QCheckBox()
             chk.setStyleSheet("margin-left:6px;")
             self.table.setCellWidget(row, COL_CHECK, chk)
-
             items = [
-                str(row + 1), d['nama_tamu'], d['no_telepon'], str(d['jumlah_tamu']),
-                d['tanggal'], d['waktu'], d['nomor_meja'] or '-', d['status']
+                str(row + 1), d["nama_tamu"], d["no_telepon"], str(d["jumlah_tamu"]),
+                d["tanggal"], d["waktu"], d["nomor_meja"] or "-", d["status"],
             ]
             for col_offset, val in enumerate(items):
                 item = NumericTableWidgetItem(val) if col_offset == 0 else QTableWidgetItem(val)
                 item.setBackground(bg)
                 if col_offset == 0:
                     item.setData(Qt.DisplayRole, row + 1)
-                    item.setData(Qt.UserRole, d['id'])
+                    item.setData(Qt.UserRole, d["id"])
                     item.setData(Qt.UserRole + 1, row + 1)
                 self.table.setItem(row, col_offset + 1, item)
         self.table.setSortingEnabled(True)
@@ -174,11 +139,10 @@ class ReservasiPage(QWidget):
             for r in range(self.table.rowCount())
             if self.table.cellWidget(r, COL_CHECK)
         )
-        new_state = not any_checked
         for r in range(self.table.rowCount()):
             w = self.table.cellWidget(r, COL_CHECK)
             if w:
-                w.setChecked(new_state)
+                w.setChecked(not any_checked)
 
     def _get_checked_ids(self):
         ids = []
@@ -195,8 +159,8 @@ class ReservasiPage(QWidget):
         status_f = self.filter_status.currentText()
         filtered = [
             d for d in self.all_data
-            if (not search or search in d['nama_tamu'].lower() or search in d['no_telepon'].lower())
-            and (status_f == "Semua Status" or d['status'] == status_f)
+            if (not search or search in d["nama_tamu"].lower() or search in d["no_telepon"].lower())
+            and (status_f == "Semua Status" or d["status"] == status_f)
         ]
         self._populate_table(filtered)
 
@@ -237,12 +201,12 @@ class ReservasiPage(QWidget):
             if not item_id:
                 return
             ids = [item_id]
-
         reply = QMessageBox.question(
-            self, "Konfirmasi Hapus",
+            self,
+            "Konfirmasi Hapus",
             f"Yakin ingin menghapus {len(ids)} data reservasi yang dipilih?\n"
             "Status meja terkait akan otomatis diperbarui.",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             ok, err = database.hapus_banyak_reservasi(ids)
@@ -260,11 +224,8 @@ class ReservasiPage(QWidget):
             return
         current_status = self.table.item(self.table.currentRow(), COL_STATUS).text()
         if from_status and current_status != from_status:
-            QMessageBox.warning(self, "Peringatan",
-                f"Aksi ini hanya untuk reservasi berstatus '{from_status}'.")
+            QMessageBox.warning(self, "Peringatan", f"Aksi ini hanya untuk reservasi berstatus '{from_status}'.")
             return
-
-        # Gunakan fungsi db yang auto-sync meja
         ok, err = database.update_status_reservasi(item_id, new_status)
         if ok:
             self._do_refresh()

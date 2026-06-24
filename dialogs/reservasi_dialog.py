@@ -1,22 +1,19 @@
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
-                               QLabel, QLineEdit, QSpinBox, QComboBox, QDateEdit,
-                               QTextEdit, QPushButton, QMessageBox, QGroupBox)
-from PySide6.QtCore import Qt, QDate
+from PySide6.QtCore import QDate
+from PySide6.QtWidgets import QDialog, QMessageBox
+
 import database.database as database
+from ui.ui_reservasi_dialog import Ui_ReservasiDialog
 
 JAM_OPERASIONAL = [
     "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
     "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30",
 ]
 
-
-class ReservasiDialog(QDialog):
+class ReservasiDialog(QDialog, Ui_ReservasiDialog):
     def __init__(self, reservasi_id=None, parent=None):
         super().__init__(parent)
         self.reservasi_id = reservasi_id
         self.is_edit = reservasi_id is not None
-        self.setWindowTitle("Edit Reservasi" if self.is_edit else "Tambah Reservasi Baru")
-        self.setMinimumWidth(520)
         self.init_ui()
         if self.is_edit:
             self.load_data()
@@ -24,88 +21,21 @@ class ReservasiDialog(QDialog):
             self._update_meja()
 
     def init_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(15)
+        self.setupUi(self)
+        self.setWindowTitle("Edit Reservasi" if self.is_edit else "Tambah Reservasi Baru")
+        self.setMinimumWidth(520)
 
-        # ── Informasi Tamu ──────────────────────────────────────────
-        tamu_grp = QGroupBox("👤  Informasi Tamu")
-        tamu_lay = QFormLayout(tamu_grp)
-        tamu_lay.setVerticalSpacing(12)
-
-        self.nama_input = QLineEdit()
-        self.nama_input.setPlaceholderText("Masukkan nama lengkap tamu")
-        self.nama_input.setMaxLength(100)
-
-        self.telepon_input = QLineEdit()
-        self.telepon_input.setPlaceholderText("08xxxxxxxxxx")
-        self.telepon_input.setMaxLength(15)
-
-        self.jumlah_input = QSpinBox()
-        self.jumlah_input.setRange(1, 8)
-        self.jumlah_input.setValue(2)
-        self.jumlah_input.setSuffix("  orang")
-        self.jumlah_input.valueChanged.connect(self._update_meja)
-
-        tamu_lay.addRow("Nama Tamu *", self.nama_input)
-        tamu_lay.addRow("No. Telepon *", self.telepon_input)
-        tamu_lay.addRow("Jumlah Tamu *", self.jumlah_input)
-
-        # ── Detail Reservasi ─────────────────────────────────────────
-        res_grp = QGroupBox("🗓️  Detail Reservasi")
-        res_lay = QFormLayout(res_grp)
-        res_lay.setVerticalSpacing(12)
-
-        self.tanggal_input = QDateEdit(QDate.currentDate())
+        self.tanggal_input.setDate(QDate.currentDate())
         self.tanggal_input.setMinimumDate(QDate.currentDate())
-        self.tanggal_input.setCalendarPopup(True)
-        self.tanggal_input.dateChanged.connect(self._update_meja)
-
-        self.waktu_combo = QComboBox()
         self.waktu_combo.addItems(JAM_OPERASIONAL)
+        self.status_combo.addItems(["Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"])
+        self.save_btn.setObjectName("primaryButton")
+
+        self.cancel_btn.clicked.connect(self.reject)
+        self.save_btn.clicked.connect(self.save)
+        self.jumlah_input.valueChanged.connect(self._update_meja)
+        self.tanggal_input.dateChanged.connect(self._update_meja)
         self.waktu_combo.currentTextChanged.connect(self._update_meja)
-
-        self.meja_combo = QComboBox()
-
-        self.status_combo = QComboBox()
-        self.status_combo.addItems(
-            ["Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"]
-        )
-
-        self.catatan_input = QTextEdit()
-        self.catatan_input.setPlaceholderText(
-            "Catatan khusus: alergi makanan, dekorasi, permintaan meja window seat, dll."
-        )
-        self.catatan_input.setMaximumHeight(75)
-
-        # Info otomatis
-        self.info_meja_lbl = QLabel()
-        self.info_meja_lbl.setStyleSheet(
-            "color: #1A5276; font-size: 10px; font-style: italic;"
-        )
-
-        res_lay.addRow("Tanggal *", self.tanggal_input)
-        res_lay.addRow("Jam *", self.waktu_combo)
-        res_lay.addRow("Pilih Meja", self.meja_combo)
-        res_lay.addRow("", self.info_meja_lbl)
-        res_lay.addRow("Status", self.status_combo)
-        res_lay.addRow("Catatan", self.catatan_input)
-
-        # ── Tombol ───────────────────────────────────────────────────
-        btn_row = QHBoxLayout()
-        cancel_btn = QPushButton("Batal")
-        cancel_btn.clicked.connect(self.reject)
-
-        save_btn = QPushButton("💾  Simpan Reservasi")
-        save_btn.setObjectName("primaryButton")
-        save_btn.clicked.connect(self.save)
-
-        btn_row.addStretch()
-        btn_row.addWidget(cancel_btn)
-        btn_row.addWidget(save_btn)
-
-        layout.addWidget(tamu_grp)
-        layout.addWidget(res_grp)
-        layout.addLayout(btn_row)
 
     def _update_meja(self):
         jumlah = self.jumlah_input.value()
@@ -114,23 +44,22 @@ class ReservasiDialog(QDialog):
         tables = database.get_recommended_tables(jumlah, tanggal, waktu, self.reservasi_id)
 
         self.meja_combo.clear()
-        self.meja_combo.addItem("— Pilih meja (opsional) —", None)
+        self.meja_combo.addItem("-- Pilih meja (opsional) --", None)
         for t in tables:
-            self.meja_combo.addItem(f"{t['nomor_meja']}  (kapasitas {t['kapasitas']} orang)", t['id'])
+            self.meja_combo.addItem(f"{t['nomor_meja']}  (kapasitas {t['kapasitas']} orang)", t["id"])
+
         if not tables:
-            self.meja_combo.addItem("⚠️  Tidak ada meja tersedia di jam ini", None)
+            self.meja_combo.addItem("Tidak ada meja tersedia di jam ini", None)
             self.info_meja_lbl.setText("")
-        else:
-            self.info_meja_lbl.setText(
-                "Meja yang dipilih akan otomatis ditandai Terisi setelah disimpan."
-            )
-            best_table = tables[0]
-            self.meja_combo.setCurrentIndex(1)
-            self.info_meja_lbl.setText(
-                "Rekomendasi AI: "
-                f"{best_table['nomor_meja']} karena sisa kursinya {best_table['sisa_kursi']} "
-                f"dan riwayat pemakaiannya {best_table['jumlah_pemakaian']} kali."
-            )
+            return
+
+        best_table = tables[0]
+        self.meja_combo.setCurrentIndex(1)
+        self.info_meja_lbl.setText(
+            "Rekomendasi AI: "
+            f"{best_table['nomor_meja']} karena sisa kursinya {best_table['sisa_kursi']} "
+            f"dan riwayat pemakaiannya {best_table['jumlah_pemakaian']} kali."
+        )
 
     def load_data(self):
         conn = database.get_db_connection()
@@ -138,17 +67,19 @@ class ReservasiDialog(QDialog):
         conn.close()
         if not d:
             return
-        self.nama_input.setText(d['nama_tamu'])
-        self.telepon_input.setText(d['no_telepon'])
-        self.jumlah_input.setValue(d['jumlah_tamu'])
-        self.tanggal_input.setDate(QDate.fromString(d['tanggal'], "yyyy-MM-dd"))
-        self.waktu_combo.setCurrentText(d['waktu'])
-        self.status_combo.setCurrentText(d['status'])
-        self.catatan_input.setPlainText(d['catatan'] or "")
+
+        self.nama_input.setText(d["nama_tamu"])
+        self.telepon_input.setText(d["no_telepon"])
+        self.jumlah_input.setValue(d["jumlah_tamu"])
+        self.tanggal_input.setDate(QDate.fromString(d["tanggal"], "yyyy-MM-dd"))
+        self.waktu_combo.setCurrentText(d["waktu"])
+        self.status_combo.setCurrentText(d["status"])
+        self.catatan_input.setPlainText(d["catatan"] or "")
         self._update_meja()
-        if d['meja_id']:
+
+        if d["meja_id"]:
             for i in range(self.meja_combo.count()):
-                if self.meja_combo.itemData(i) == d['meja_id']:
+                if self.meja_combo.itemData(i) == d["meja_id"]:
                     self.meja_combo.setCurrentIndex(i)
                     break
 
@@ -174,8 +105,9 @@ class ReservasiDialog(QDialog):
             self.telepon_input.setFocus()
             return
         if not telepon.isdigit() or len(telepon) < 10:
-            QMessageBox.warning(self, "Validasi",
-                                "Nomor telepon tidak valid (min. 10 digit angka).")
+            QMessageBox.warning(
+                self, "Validasi", "Nomor telepon tidak valid (min. 10 digit angka)."
+            )
             self.telepon_input.setFocus()
             return
         if meja_id is None:
@@ -186,10 +118,10 @@ class ReservasiDialog(QDialog):
         ok, err = database.simpan_reservasi(
             nama, telepon, jumlah, tanggal, waktu,
             meja_id, status, catatan,
-            reservasi_id=self.reservasi_id
+            reservasi_id=self.reservasi_id,
         )
         if ok:
-            QMessageBox.information(self, "Sukses", "✅  Reservasi berhasil disimpan!")
+            QMessageBox.information(self, "Sukses", "Reservasi berhasil disimpan!")
             self.accept()
         else:
             QMessageBox.critical(self, "Error", f"Gagal menyimpan: {err}")
