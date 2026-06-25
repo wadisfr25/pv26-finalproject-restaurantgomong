@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -48,7 +49,7 @@ class PegawaiPage(QWidget):
         self.hapus_btn.setText("🗑️  Hapus Terpilih")
         self.filter_jabatan.addItems(["Semua Jabatan", "Manajer", "Staf"])
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["✓", "ID", "Nama", "Username", "Jabatan"])
+        self.table.setHorizontalHeaderLabels(["✓", "No", "Nama", "Username", "Jabatan"])
         self.table.cellDoubleClicked.connect(self.edit_pegawai)
         self.table.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
@@ -65,9 +66,14 @@ class PegawaiPage(QWidget):
         self.edit_btn.clicked.connect(self.edit_pegawai_selected)
         self.hapus_btn.clicked.connect(self.hapus_terpilih)
 
-    def refresh(self):
+    def refresh(self, reset_filter=False, select_id=None):
+        if reset_filter:
+            self.search_input.clear()
+            self.filter_jabatan.setCurrentText("Semua Jabatan")
         self.all_data = database.get_all_pegawai()
         self.apply_filter()
+        if select_id is not None:
+            self._select_row_by_id(select_id)
         if self.refresh_manager_callback:
             self.refresh_manager_callback()
 
@@ -88,11 +94,25 @@ class PegawaiPage(QWidget):
             chk = QCheckBox()
             chk.setStyleSheet("margin-left:6px;")
             self.table.setCellWidget(row, COL_CHECK, chk)
-            for col_offset, val in enumerate([str(d["id"]), d["nama"], d["username"], d["jabatan"]]):
+            for col_offset, val in enumerate([str(row + 1), d["nama"], d["username"], d["jabatan"]]):
                 item = QTableWidgetItem(val)
                 item.setBackground(bg)
+                if col_offset == 0:
+                    item.setData(Qt.UserRole, d["id"])
                 self.table.setItem(row, col_offset + 1, item)
         self.table.setSortingEnabled(True)
+
+    def _select_row_by_id(self, pegawai_id):
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, COL_ID)
+            if item and item.data(Qt.UserRole) == pegawai_id:
+                self.table.selectRow(row)
+                self.table.scrollToItem(item)
+                break
+
+    def _get_row_pegawai_id(self, row):
+        item = self.table.item(row, COL_ID)
+        return item.data(Qt.UserRole) if item else None
 
     def _header_clicked(self, logical_index):
         if logical_index != COL_CHECK:
@@ -112,7 +132,7 @@ class PegawaiPage(QWidget):
         for r in range(self.table.rowCount()):
             w = self.table.cellWidget(r, COL_CHECK)
             if w and w.isChecked():
-                ids.append(int(self.table.item(r, COL_ID).text()))
+                ids.append(self._get_row_pegawai_id(r))
         return ids
 
     def _get_selected_id(self):
@@ -120,12 +140,12 @@ class PegawaiPage(QWidget):
         if not selected:
             QMessageBox.warning(self, "Peringatan", "Pilih data pegawai terlebih dahulu.")
             return None
-        return int(self.table.item(self.table.currentRow(), COL_ID).text())
+        return self._get_row_pegawai_id(self.table.currentRow())
 
     def tambah_pegawai(self):
         dialog = PegawaiDialog(parent=self)
         if dialog.exec() == QDialog.Accepted:
-            self.refresh()
+            self.refresh(reset_filter=True, select_id=dialog.saved_pegawai_id)
 
     def edit_pegawai(self, row=None, col=None):
         if col == COL_CHECK:
@@ -135,7 +155,7 @@ class PegawaiPage(QWidget):
         if row < 0:
             QMessageBox.warning(self, "Peringatan", "Pilih data pegawai terlebih dahulu.")
             return
-        pegawai_id = int(self.table.item(row, COL_ID).text())
+        pegawai_id = self._get_row_pegawai_id(row)
         dialog = PegawaiDialog(pegawai_id=pegawai_id, parent=self)
         if dialog.exec() == QDialog.Accepted:
             self.refresh()

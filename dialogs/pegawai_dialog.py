@@ -10,6 +10,7 @@ class PegawaiDialog(QDialog, Ui_PegawaiDialog):
         super().__init__(parent)
         self.pegawai_id = pegawai_id
         self.is_edit = pegawai_id is not None
+        self.saved_pegawai_id = pegawai_id
         self.init_ui()
         if self.is_edit:
             self.load_data()
@@ -89,6 +90,8 @@ class PegawaiDialog(QDialog, Ui_PegawaiDialog):
                 self.konfirmasi_input.setFocus()
                 return
             ok, err = database.tambah_pegawai(nama, username, password_plain, jabatan)
+            if ok:
+                self.saved_pegawai_id = err
 
         if ok:
             QMessageBox.information(self, "Sukses", "Data pegawai berhasil disimpan!")

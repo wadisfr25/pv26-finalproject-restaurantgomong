@@ -1,9 +1,11 @@
 import sqlite3
 import hashlib
+from pathlib import Path
 from datetime import datetime, timedelta
 from ai.reservation_ai import prediksi_jam_ramai, rekomendasi_meja
 
-DB_NAME = "restaurant_gomong.db"
+DB_DIR = Path(__file__).resolve().parent
+DB_NAME = DB_DIR / "restaurant_gomong.db"
 
 
 def get_db_connection():
@@ -344,16 +346,36 @@ def get_pegawai_by_id(pegawai_id):
     return row
 
 
+def _get_next_pegawai_id(conn):
+    row = conn.execute("""
+        WITH RECURSIVE candidates(id) AS (
+            SELECT 1
+            UNION ALL
+            SELECT id + 1
+            FROM candidates
+            WHERE id < (SELECT COALESCE(MAX(id), 0) + 1 FROM pegawai)
+        )
+        SELECT id
+        FROM candidates
+        WHERE id NOT IN (SELECT id FROM pegawai)
+        ORDER BY id
+        LIMIT 1
+    """).fetchone()
+    return row["id"] if row else 1
+
+
 def tambah_pegawai(nama, username, password_plain, jabatan):
     hashed = hashlib.sha256(password_plain.encode()).hexdigest()
     conn = get_db_connection()
     try:
-        conn.execute(
-            "INSERT INTO pegawai (nama, username, password, jabatan) VALUES (?,?,?,?)",
-            (nama, username, hashed, jabatan)
+        _compact_pegawai_ids(conn)
+        next_id = _get_next_pegawai_id(conn)
+        cursor = conn.execute(
+            "INSERT INTO pegawai (id, nama, username, password, jabatan) VALUES (?,?,?,?,?)",
+            (next_id, nama, username, hashed, jabatan)
         )
         conn.commit()
-        return True, None
+        return True, cursor.lastrowid
     except Exception as e:
         return False, str(e)
     finally:
@@ -386,6 +408,7 @@ def hapus_pegawai(pegawai_id):
     conn = get_db_connection()
     try:
         conn.execute("DELETE FROM pegawai WHERE id = ?", (pegawai_id,))
+        _compact_pegawai_ids(conn)
         conn.commit()
         return True, None
     except Exception as e:
@@ -399,6 +422,7 @@ def hapus_banyak_pegawai(id_list):
     try:
         placeholders = ','.join('?' for _ in id_list)
         conn.execute(f"DELETE FROM pegawai WHERE id IN ({placeholders})", id_list)
+        _compact_pegawai_ids(conn)
         conn.commit()
         return True, None
     except Exception as e:
@@ -414,6 +438,38 @@ def get_jabatan_by_username(username):
     ).fetchone()
     conn.close()
     return row['jabatan'] if row else 'Staf'
+
+
+def _compact_pegawai_ids(conn):
+    rows = conn.execute("SELECT id FROM pegawai ORDER BY id").fetchall()
+    id_map = {
+        row["id"]: new_id
+        for new_id, row in enumerate(rows, start=1)
+        if row["id"] != new_id
+    }
+    if not id_map:
+        return
+
+    for old_id in id_map:
+        conn.execute("UPDATE pegawai SET id = ? WHERE id = ?", (-old_id, old_id))
+        conn.execute(
+            "UPDATE reservasi SET id_pegawai = ? WHERE id_pegawai = ?",
+            (-old_id, old_id),
+        )
+
+    for old_id, new_id in id_map.items():
+        conn.execute("UPDATE pegawai SET id = ? WHERE id = ?", (new_id, -old_id))
+        conn.execute(
+            "UPDATE reservasi SET id_pegawai = ? WHERE id_pegawai = ?",
+            (new_id, -old_id),
+        )
+
+    max_id = conn.execute("SELECT COALESCE(MAX(id), 0) FROM pegawai").fetchone()[0]
+    conn.execute("DELETE FROM sqlite_sequence WHERE name = 'pegawai'")
+    conn.execute(
+        "INSERT INTO sqlite_sequence (name, seq) VALUES ('pegawai', ?)",
+        (max_id,),
+    )
 
 
 # ── RESERVASI ────────────────────────────────────────────────────────────────
@@ -787,6 +843,7 @@ def init_database():
     conn = get_db_connection()
     try:
         _hapus_status_reservasi_lama(conn)
+        _compact_pegawai_ids(conn)
         conn.commit()
     finally:
         conn.close()
