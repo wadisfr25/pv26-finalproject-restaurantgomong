@@ -62,14 +62,10 @@ class MainDashboard(QWidget):
 
     def _init_manager_pages(self):
         self.page_dash = ManagerDashboardPage(self.nama_pegawai)
-        self.page_reservasi = ReservasiPage(self.nama_pegawai, self._refresh_all)
-        self.page_meja = MejaPage()
         self.page_laporan = LaporanPage()
         self.page_pegawai = PegawaiPage(refresh_manager_callback=self.page_dash.refresh)
         for page in [
             self.page_dash,
-            self.page_reservasi,
-            self.page_meja,
             self.page_laporan,
             self.page_pegawai,
         ]:
@@ -79,8 +75,6 @@ class MainDashboard(QWidget):
         if self.is_manager:
             nav_items = [
                 ("🏠", "Dashboard"),
-                ("📋", "Reservasi"),
-                ("🪑", "Manajemen Meja"),
                 ("📊", "Laporan & Statistik"),
                 ("👥", "Manajemen Pegawai"),
             ]
@@ -185,13 +179,16 @@ class MainDashboard(QWidget):
         self.content_stack.setCurrentIndex(index)
         if index == 0:
             self.page_dash.refresh()
-        elif index == 2:
+        elif not self.is_manager and index == 1:
+            self.page_reservasi.refresh()
+        elif not self.is_manager and index == 2:
             self.page_meja.refresh()
-        elif self.is_manager and index == 3:
+        elif self.is_manager and index == 1:
             self.page_laporan.refresh()
-        elif self.is_manager and index == 4:
+        elif self.is_manager and index == 2:
             self.page_pegawai.refresh()
 
     def _refresh_all(self):
         self.page_dash.refresh()
-        self.page_meja.refresh()
+        if not self.is_manager:
+            self.page_meja.refresh()
